@@ -11,6 +11,7 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('en', {
   'nav.settings': 'Settings',
   'nav.info': 'Info',
   'shell.nightWindow': 'NIGHT WINDOW',
+  'shell.headerSubtitle': 'Astrophotography planner',
   'shell.pickDate': 'Click to choose a date',
   'shell.tonight': 'Tonight',
   'shell.live': 'LIVE',

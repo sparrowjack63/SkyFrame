@@ -11,6 +11,7 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('fr', {
   'nav.settings': 'Config',
   'nav.info': 'Infos',
   'shell.nightWindow': 'FENÊTRE DE LA NUIT',
+  'shell.headerSubtitle': 'Planificateur astrophoto',
   'shell.pickDate': 'Cliquer pour choisir une date',
   'shell.tonight': 'Ce soir',
   'shell.live': 'DIRECT',
