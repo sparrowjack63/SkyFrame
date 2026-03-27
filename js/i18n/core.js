@@ -93,7 +93,7 @@
   function registerLocale(lang, messages) {
     const normalized = normalizeLanguage(lang);
     if (!normalized || !messages || typeof messages !== 'object') return;
-    LOCALES[normalized] = Object.assign({}, messages);
+    LOCALES[normalized] = Object.assign({}, LOCALES[normalized] || {}, messages);
 
     if (global.document && (normalized === currentLanguage || normalized === DEFAULT_LANGUAGE)) {
       applyTranslations();
