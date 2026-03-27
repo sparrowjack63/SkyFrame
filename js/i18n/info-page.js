@@ -49,6 +49,16 @@
     ['#page-info > #info-page-inner > .info-card-grid:last-of-type .info-card > div:last-child', 'info.license.body']
   ];
 
+  function applySchemaTranslations() {
+    if (!global.document || !global.SkyFrameI18n || typeof global.SkyFrameI18n.translate !== 'function') return;
+
+    global.document.querySelectorAll('#schema-container [data-schema-i18n], #schema-modal-inner [data-schema-i18n]').forEach(function(node) {
+      const key = node.getAttribute('data-schema-i18n');
+      if (!key) return;
+      node.textContent = global.SkyFrameI18n.translate(key);
+    });
+  }
+
   function applyInfoTranslations() {
     if (!global.document || !global.SkyFrameI18n || typeof global.SkyFrameI18n.translate !== 'function') return;
 
@@ -63,6 +73,8 @@
       if (!node) return;
       node.innerHTML = global.SkyFrameI18n.translate(binding[1]);
     });
+
+    applySchemaTranslations();
   }
 
   function setStaticJsonSample() {

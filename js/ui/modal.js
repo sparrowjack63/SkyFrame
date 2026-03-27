@@ -179,6 +179,9 @@ function openSchemaModal() {
     clone.removeAttribute('width');
     clone.removeAttribute('height');
     inner.appendChild(clone);
+    if (window.SkyFrameInfoI18n && typeof window.SkyFrameInfoI18n.applyTranslations === 'function') {
+      window.SkyFrameInfoI18n.applyTranslations();
+    }
     schemaZoom = window.innerWidth <= 768 ? 1.35 : 1.1;
     applySchemaZoom();
   }
