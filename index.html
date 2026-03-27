@@ -24,6 +24,10 @@
           <button class="th-btn" id="th-dim"   onclick="setTheme('dim')"   title="Dim">🌒</button>
           <button class="th-btn" id="th-day"   onclick="setTheme('day')"   title="Jour">☀️</button>
         </div>
+        <div class="theme-switcher" id="language-switcher" aria-label="Language selector">
+          <button class="th-btn" type="button" data-lang-button="fr" onclick="SkyFrameI18n.setLanguage('fr')" aria-pressed="false" title="Français">FR</button>
+          <button class="th-btn" type="button" data-lang-button="en" onclick="SkyFrameI18n.setLanguage('en')" aria-pressed="false" title="English">EN</button>
+        </div>
         <div class="status-chips">
           <span class="chip ok" id="chip-loc">📍 45.59°N</span>
           <span class="chip warn" id="chip-moon">🌕 --%</span>
@@ -829,6 +833,9 @@
 <script src="./js/chart/hover.js"></script>
 <script src="./js/planner/core.js"></script>
 <script src="./js/planner/render.js"></script>
+<script src="./js/i18n/core.js"></script>
+<script src="./js/i18n/locales/fr.js"></script>
+<script src="./js/i18n/locales/en.js"></script>
 <script src="./js/main.js"></script>
 <script>
 (function() {
