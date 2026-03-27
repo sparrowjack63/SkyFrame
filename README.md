@@ -6,6 +6,9 @@
 
 SkyFrame helps astrophotographers plan their sessions by showing which targets are accessible given their specific site, telescope, and horizon constraints — including balcony walls, trees, or buildings. It works fully offline as a PWA with no dependencies.
 
+> [!NOTE]
+> SkyFrame supports arbitrary observing locations worldwide. However, the current curated catalog, seasonal labels, and editorial recommendations are primarily tuned for northern hemisphere usage.
+
 ---
 
 ## Features
