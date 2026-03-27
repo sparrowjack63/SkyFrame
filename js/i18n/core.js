@@ -103,8 +103,44 @@
     return interpolate(String(message), params);
   }
 
+  function applyTranslations(root) {
+    if (!global.document) return;
+    const scope = root && typeof root.querySelectorAll === 'function' ? root : global.document;
+
+    scope.querySelectorAll('[data-i18n]').forEach(function(node) {
+      const key = node.getAttribute('data-i18n');
+      if (!key) return;
+      node.textContent = translate(key);
+    });
+
+    scope.querySelectorAll('[data-i18n-placeholder]').forEach(function(node) {
+      const key = node.getAttribute('data-i18n-placeholder');
+      if (!key) return;
+      node.setAttribute('placeholder', translate(key));
+    });
+
+    scope.querySelectorAll('[data-i18n-title]').forEach(function(node) {
+      const key = node.getAttribute('data-i18n-title');
+      if (!key) return;
+      node.setAttribute('title', translate(key));
+    });
+
+    scope.querySelectorAll('[data-i18n-aria-label]').forEach(function(node) {
+      const key = node.getAttribute('data-i18n-aria-label');
+      if (!key) return;
+      node.setAttribute('aria-label', translate(key));
+    });
+  }
+
   function init() {
     setLanguage(detectPreferredLanguage());
+    applyTranslations();
+  }
+
+  if (global.document) {
+    global.document.addEventListener('skyframe:languagechange', function() {
+      applyTranslations();
+    });
   }
 
   global.SkyFrameI18n = {
@@ -117,6 +153,7 @@
     translate: translate,
     registerLocale: registerLocale,
     updateLanguageButtons: updateLanguageButtons,
+    applyTranslations: applyTranslations,
     init: init
   };
 

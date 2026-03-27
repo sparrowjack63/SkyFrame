@@ -45,7 +45,7 @@ function updateDateNavUI(){
     const label = document.getElementById(id);
     if(!label) return;
     if(dateOffset === 0){
-      label.textContent = 'Ce soir 📅';
+      label.textContent = `${SkyFrameI18n.translate('shell.tonight')} 📅`;
       label.className = 'date-nav-label';
     } else {
       const d = getBaseDate();
@@ -156,7 +156,7 @@ function setNow(){
   }
   simTime=null;
   document.getElementById('btn-now').classList.add('active-now');
-  document.getElementById('slider-label').textContent='DIRECT';
+  document.getElementById('slider-label').textContent=SkyFrameI18n.translate('shell.live');
   // Reset slider to current position in night
   syncSliderToNow();
   renderTargets();
@@ -220,3 +220,11 @@ function getOrComputeNightBounds(){
 }
 
 function jumpTo(h,m){ jumpToH(h+(h<12?24:0)+m/60); }
+
+document.addEventListener('skyframe:languagechange', function() {
+  updateDateNavUI();
+  if (!simTime) {
+    const sliderLabel = document.getElementById('slider-label');
+    if (sliderLabel) sliderLabel.textContent = SkyFrameI18n.translate('shell.live');
+  }
+});

@@ -20,13 +20,13 @@
       </div>
       <div class="header-right">
         <div class="theme-switcher" id="theme-switcher">
-          <button class="th-btn active" id="th-night" onclick="setTheme('night')" title="Nuit">🌑</button>
-          <button class="th-btn" id="th-dim"   onclick="setTheme('dim')"   title="Dim">🌒</button>
-          <button class="th-btn" id="th-day"   onclick="setTheme('day')"   title="Jour">☀️</button>
+          <button class="th-btn active" id="th-night" onclick="setTheme('night')" data-i18n-title="theme.night">🌑</button>
+          <button class="th-btn" id="th-dim"   onclick="setTheme('dim')" data-i18n-title="theme.dim">🌒</button>
+          <button class="th-btn" id="th-day"   onclick="setTheme('day')" data-i18n-title="theme.day">☀️</button>
         </div>
-        <div class="theme-switcher" id="language-switcher" aria-label="Language selector">
-          <button class="th-btn" type="button" data-lang-button="fr" onclick="SkyFrameI18n.setLanguage('fr')" aria-pressed="false" title="Français">FR</button>
-          <button class="th-btn" type="button" data-lang-button="en" onclick="SkyFrameI18n.setLanguage('en')" aria-pressed="false" title="English">EN</button>
+        <div class="theme-switcher" id="language-switcher" data-i18n-aria-label="language.switcher">
+          <button class="th-btn" type="button" data-lang-button="fr" onclick="SkyFrameI18n.setLanguage('fr')" aria-pressed="false" data-i18n-title="language.french">FR</button>
+          <button class="th-btn" type="button" data-lang-button="en" onclick="SkyFrameI18n.setLanguage('en')" aria-pressed="false" data-i18n-title="language.english">EN</button>
         </div>
         <div class="status-chips">
           <span class="chip ok" id="chip-loc">📍 45.59°N</span>
@@ -37,16 +37,16 @@
       </div>
     </div>
     <div class="tabs">
-      <div class="tab active" onclick="showPage('targets')" id="tab-targets">🎯 Cibles</div>
-      <div class="tab" onclick="showPage('chart')" id="tab-chart">📈 Courbes</div>
-      <div class="tab" onclick="showPage('planner')" id="tab-planner">🗓️ Planification</div>
-      <div class="tab" onclick="showPage('settings')" id="tab-settings">⚙️ Config</div>
-      <div class="tab" onclick="showPage('info')" id="tab-info">ℹ️ Infos</div>
+      <div class="tab active" onclick="showPage('targets')" id="tab-targets">🎯 <span data-i18n="nav.targets">Cibles</span></div>
+      <div class="tab" onclick="showPage('chart')" id="tab-chart">📈 <span data-i18n="nav.chart">Courbes</span></div>
+      <div class="tab" onclick="showPage('planner')" id="tab-planner">🗓️ <span data-i18n="nav.planner">Planification</span></div>
+      <div class="tab" onclick="showPage('settings')" id="tab-settings">⚙️ <span data-i18n="nav.settings">Config</span></div>
+      <div class="tab" onclick="showPage('info')" id="tab-info">ℹ️ <span data-i18n="nav.info">Infos</span></div>
     </div>
     <!-- BARRE DE NUIT -->
     <div id="night-timeline">
       <div class="ntl-title">
-        <span>FENÊTRE DE LA NUIT</span>
+        <span data-i18n="shell.nightWindow">FENÊTRE DE LA NUIT</span>
         <span id="ntl-dark-range" style="color:var(--gold);font-weight:700;font-size:9px;"></span>
       </div>
       <div class="ntl-bar-wrap">
@@ -77,12 +77,12 @@
         </div>
         <div class="date-nav-row">
           <button class="time-btn" onclick="changeDate(-1)">&#9664;</button>
-          <span class="date-nav-label" id="date-forecast-label" onclick="toggleDatePicker('targets')" style="cursor:pointer;user-select:none" title="Cliquer pour choisir une date">Ce soir 📅</span>
+          <span class="date-nav-label" id="date-forecast-label" onclick="toggleDatePicker('targets')" style="cursor:pointer;user-select:none" data-i18n-title="shell.pickDate">Ce soir 📅</span>
           <input type="date" id="date-picker-targets" class="date-picker-input" style="display:none" onchange="setDateFromPicker(this.value)">
           <button class="time-btn" onclick="changeDate(+1)">&#9654;</button>
         </div>
         <div class="time-controls">
-          <button class="time-btn active-now" id="btn-now" onclick="setNow()">⬤ DIRECT</button>
+          <button class="time-btn active-now" id="btn-now" onclick="setNow()">⬤ <span data-i18n="shell.live">DIRECT</span></button>
           <input type="range" class="time-slider" id="time-slider" min="0" max="600" value="0" oninput="onSlider(this.value)">
           <span class="time-btn" id="slider-label" style="min-width:42px;text-align:center">--h--</span>
         </div>
@@ -91,7 +91,7 @@
           <span id="twilight-info" style="color:var(--gold);font-size:8px"></span>
           <span id="slider-end-label">--h--</span>
         </div>
-        <div class="time-slider-emphasis">Fais glisser le curseur pour parcourir la nuit</div>
+        <div class="time-slider-emphasis" data-i18n="shell.sliderHint">Fais glisser le curseur pour parcourir la nuit</div>
       </div>
 
       <div class="moon-bar">
@@ -104,7 +104,7 @@
       </div>
 
       <button class="mobile-filter-toggle" id="mobile-filter-toggle-targets" onclick="toggleMobileFilters('targets')">
-        <span class="mft-label">Filtres</span>
+        <span class="mft-label" data-i18n="shell.filters">Filtres</span>
         <span class="mft-active" id="mft-active-targets">Tous</span>
         <span class="mft-arrow">▾</span>
       </button>
@@ -135,12 +135,12 @@
         </div>
       </div>
       <div class="search-bar" id="targets-search-bar">
-        <span class="search-label">RECHERCHE :</span>
+        <span class="search-label" data-i18n="shell.search">RECHERCHE :</span>
         <div class="search-input-wrap">
-          <input class="search-input object-search-input" id="object-search-targets" type="search" autocomplete="off" spellcheck="false" placeholder="M81, NGC 4565, Cocoon, Markarian, Leo Triplet…" oninput="setObjectSearch(this.value,this)">
-          <button class="search-clear" id="object-search-clear-targets" type="button" onclick="clearObjectSearch()" aria-label="Effacer la recherche">×</button>
+          <input class="search-input object-search-input" id="object-search-targets" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="search.targetsPlaceholder" oninput="setObjectSearch(this.value,this)">
+          <button class="search-clear" id="object-search-clear-targets" type="button" onclick="clearObjectSearch()" data-i18n-aria-label="search.clear">×</button>
         </div>
-        <span class="search-hint">ID · alias · groupe</span>
+        <span class="search-hint" data-i18n="search.targetsHint">ID · alias · groupe</span>
       </div>
 
       <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;" id="count-label"></div>
@@ -152,13 +152,13 @@
       <!-- Fullscreen overlay -->
       <div id="chart-fullscreen">
         <div id="chart-fs-bar">
-          <span class="fs-zoom-label">ZOOM:</span>
-          <button class="fs-btn" id="fs-zoom-all"    onclick="setZoom('all')"><span class="lbl-full">Nuit entière</span><span class="lbl-short">Nuit</span></button>
-          <button class="fs-btn" id="fs-zoom-first"  onclick="setZoom('first')"><span class="lbl-full">1ère moitié</span><span class="lbl-short">1ère</span></button>
-          <button class="fs-btn" id="fs-zoom-second" onclick="setZoom('second')"><span class="lbl-full">2ème moitié</span><span class="lbl-short">2ème</span></button>
-          <button class="fs-btn" id="fs-zoom-astro"  onclick="setZoom('astro')"><span class="lbl-full">🌑 Nuit noire</span><span class="lbl-short">🌑</span></button>
+          <span class="fs-zoom-label" data-i18n="chart.zoomCompact">ZOOM:</span>
+          <button class="fs-btn" id="fs-zoom-all"    onclick="setZoom('all')"><span class="lbl-full" data-i18n="chart.zoomAll">Nuit entière</span><span class="lbl-short" data-i18n="chart.zoomAllShort">Nuit</span></button>
+          <button class="fs-btn" id="fs-zoom-first"  onclick="setZoom('first')"><span class="lbl-full" data-i18n="chart.zoomFirst">1ère moitié</span><span class="lbl-short" data-i18n="chart.zoomFirstShort">1ère</span></button>
+          <button class="fs-btn" id="fs-zoom-second" onclick="setZoom('second')"><span class="lbl-full" data-i18n="chart.zoomSecond">2ème moitié</span><span class="lbl-short" data-i18n="chart.zoomSecondShort">2ème</span></button>
+          <button class="fs-btn" id="fs-zoom-astro"  onclick="setZoom('astro')"><span class="lbl-full" data-i18n="chart.zoomAstro">🌑 Nuit noire</span><span class="lbl-short" data-i18n="chart.zoomAstroShort">🌑</span></button>
           <span style="font-size:9px;color:var(--accent);font-family:var(--mono);margin-left:4px;" id="fs-filter-label"></span>
-          <button class="fs-close" onclick="closeFullscreen()">✕ Fermer</button>
+          <button class="fs-close" onclick="closeFullscreen()">✕ <span data-i18n="shell.close">Fermer</span></button>
         </div>
         <canvas id="altChartFS" style="width:100%;"></canvas>
         <div id="chart-fs-legend"></div>
@@ -166,28 +166,28 @@
 
       <div class="date-nav-row" style="margin-bottom:8px;">
         <button class="time-btn" onclick="changeDate(-1)">&#9664;</button>
-        <span class="date-nav-label" id="date-forecast-label-chart" onclick="toggleDatePicker('chart')" style="cursor:pointer;user-select:none" title="Cliquer pour choisir une date">Ce soir 📅</span>
+        <span class="date-nav-label" id="date-forecast-label-chart" onclick="toggleDatePicker('chart')" style="cursor:pointer;user-select:none" data-i18n-title="shell.pickDate">Ce soir 📅</span>
         <input type="date" id="date-picker-chart" class="date-picker-input" style="display:none" onchange="setDateFromPicker(this.value)">
         <button class="time-btn" onclick="changeDate(+1)">&#9654;</button>
       </div>
       <div class="chart-controls-row">
         <div class="chart-zoom-group">
-          <span class="chart-section-label">ZOOM :</span>
-          <button class="night-btn" id="zoom-all"    onclick="setZoom('all')"><span class="lbl-full">Nuit entière</span><span class="lbl-short">Nuit</span></button>
-          <button class="night-btn" id="zoom-first"  onclick="setZoom('first')"><span class="lbl-full">1ère moitié</span><span class="lbl-short">1ère</span></button>
-          <button class="night-btn" id="zoom-second" onclick="setZoom('second')"><span class="lbl-full">2ème moitié</span><span class="lbl-short">2ème</span></button>
-          <button class="night-btn" id="zoom-astro"  onclick="setZoom('astro')"><span class="lbl-full">🌑 Nuit noire</span><span class="lbl-short">🌑</span></button>
+          <span class="chart-section-label" data-i18n="chart.zoom">ZOOM :</span>
+          <button class="night-btn" id="zoom-all"    onclick="setZoom('all')"><span class="lbl-full" data-i18n="chart.zoomAll">Nuit entière</span><span class="lbl-short" data-i18n="chart.zoomAllShort">Nuit</span></button>
+          <button class="night-btn" id="zoom-first"  onclick="setZoom('first')"><span class="lbl-full" data-i18n="chart.zoomFirst">1ère moitié</span><span class="lbl-short" data-i18n="chart.zoomFirstShort">1ère</span></button>
+          <button class="night-btn" id="zoom-second" onclick="setZoom('second')"><span class="lbl-full" data-i18n="chart.zoomSecond">2ème moitié</span><span class="lbl-short" data-i18n="chart.zoomSecondShort">2ème</span></button>
+          <button class="night-btn" id="zoom-astro"  onclick="setZoom('astro')"><span class="lbl-full" data-i18n="chart.zoomAstro">🌑 Nuit noire</span><span class="lbl-short" data-i18n="chart.zoomAstroShort">🌑</span></button>
         </div>
         <div class="chart-obj-group">
-          <span class="chart-section-label">OBJETS :</span>
-          <span class="chart-filter-info" id="chart-filter-label">— même filtre que Cibles —</span>
-          <button class="night-btn" id="chart-btn-all-filters" onclick="showPage('targets')">🎯 Tous les filtres</button>
-          <button class="night-btn chart-mob-search-btn" onclick="toggleChartSearch()" title="Rechercher un objet">🔍</button>
-          <button class="night-btn" id="chart-btn-fullscreen" onclick="openFullscreen()" style="color:var(--gold);border-color:var(--gold);">⛶ Plein écran</button>
+          <span class="chart-section-label" data-i18n="chart.objects">OBJETS :</span>
+          <span class="chart-filter-info" id="chart-filter-label" data-i18n="chart.sameFilter">— même filtre que Cibles —</span>
+          <button class="night-btn" id="chart-btn-all-filters" onclick="showPage('targets')">🎯 <span data-i18n="chart.allFilters">Tous les filtres</span></button>
+          <button class="night-btn chart-mob-search-btn" onclick="toggleChartSearch()" data-i18n-title="chart.searchObject">🔍</button>
+          <button class="night-btn" id="chart-btn-fullscreen" onclick="openFullscreen()" style="color:var(--gold);border-color:var(--gold);">⛶ <span data-i18n="chart.fullscreen">Plein écran</span></button>
         </div>
       </div>
       <button class="mobile-filter-toggle" id="mobile-filter-toggle-chart" onclick="toggleMobileFilters('chart')">
-        <span class="mft-label">Filtres</span>
+        <span class="mft-label" data-i18n="shell.filters">Filtres</span>
         <span class="mft-active" id="mft-active-chart">Tous</span>
         <span class="mft-arrow">▾</span>
       </button>
@@ -218,31 +218,31 @@
         </div>
       </div>
       <div class="search-bar compact chart-search-collapsible" id="chart-search-bar">
-        <span class="search-label">RECHERCHE :</span>
+        <span class="search-label" data-i18n="shell.search">RECHERCHE :</span>
         <div class="search-input-wrap">
-          <input class="search-input object-search-input" id="object-search-chart" type="search" autocomplete="off" spellcheck="false" placeholder="Surbrillance des courbes : M81, Bode, IC 5146…" oninput="setObjectSearch(this.value,this)">
-          <button class="search-clear" id="object-search-clear-chart" type="button" onclick="clearObjectSearch()" aria-label="Effacer la recherche">×</button>
+          <input class="search-input object-search-input" id="object-search-chart" type="search" autocomplete="off" spellcheck="false" data-i18n-placeholder="search.chartPlaceholder" oninput="setObjectSearch(this.value,this)">
+          <button class="search-clear" id="object-search-clear-chart" type="button" onclick="clearObjectSearch()" data-i18n-aria-label="search.clear">×</button>
         </div>
-        <span class="search-hint">surbrillance partagée</span>
+        <span class="search-hint" data-i18n="search.chartHint">surbrillance partagée</span>
       </div>
       <!-- Limite objets mobile (masqué desktop) -->
       <div class="chart-mobile-limit-row" id="chart-mobile-limit-row">
-        <span class="cml-label">Courbes :</span>
+        <span class="cml-label" data-i18n="chart.curves">Courbes :</span>
         <button class="chart-mobile-limit-btn active" id="cml-btn-10"  onclick="setMobileChartLimit(10)">10</button>
         <button class="chart-mobile-limit-btn"        id="cml-btn-20"  onclick="setMobileChartLimit(20)">20</button>
         <button class="chart-mobile-limit-btn"        id="cml-btn-50"  onclick="setMobileChartLimit(50)">50</button>
-        <button class="chart-mobile-limit-btn"        id="cml-btn-all" onclick="setMobileChartLimit(0)">Tous</button>
+        <button class="chart-mobile-limit-btn"        id="cml-btn-all" onclick="setMobileChartLimit(0)" data-i18n="shell.all">Tous</button>
       </div>
       <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;" id="chart-obj-count"></div>
       <div class="chart-container chart-wrap" style="position:relative;">
         <canvas id="altChart" style="display:block;"></canvas>
-        <button class="chart-fs-fab" onclick="openFullscreen()" title="Plein écran">⛶</button>
+        <button class="chart-fs-fab" onclick="openFullscreen()" data-i18n-title="chart.fullscreen">⛶</button>
       <div id="chart-tooltip" style="display:none;position:fixed;z-index:400;
         background:var(--card);border:1px solid var(--border);border-radius:8px;
         padding:8px 12px;font-family:var(--mono);font-size:11px;color:var(--text);
         pointer-events:auto;box-shadow:0 4px 16px rgba(0,0,0,.4);max-width:240px;line-height:1.6;"></div>
       </div>
-      <div class="chart-mobile-hint">⟵ glisser le graphe pour naviguer  ·  appui = détails  ·  ⛶ plein écran</div>
+      <div class="chart-mobile-hint" data-i18n="chart.mobileHint">⟵ glisser le graphe pour naviguer  ·  appui = détails  ·  ⛶ plein écran</div>
       <!-- Barre d'action mobile : apparaît quand un objet est sélectionné par tap -->
       <div id="chart-mobile-action-bar" style="display:none;">
         <span id="chart-mobile-action-name"></span>
@@ -262,10 +262,10 @@
       <div id="planner-content"></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <label class="export-btn" style="margin-top:0;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;">
-          📥 Importer JSON
+          📥 <span data-i18n="planner.importJson">Importer JSON</span>
           <input type="file" accept=".json" style="display:none" onchange="importPlannerJSON(this)">
         </label>
-        <button class="export-btn" style="margin-top:0;flex:1;" onclick="exportPlanner()">📤 Exporter JSON</button>
+        <button class="export-btn" style="margin-top:0;flex:1;" onclick="exportPlanner()">📤 <span data-i18n="planner.exportJson">Exporter JSON</span></button>
       </div>
     </div>
 
@@ -461,7 +461,7 @@
           <div class="catalog-stats-grid" id="catalog-breakdown-grid"></div>
         </div>
       </div>
-      <button class="save-btn" onclick="saveSettings()">💾 Appliquer</button>
+      <button class="save-btn" onclick="saveSettings()">💾 <span data-i18n="settings.apply">Appliquer</span></button>
     </div>
 
     <!-- INFOS -->
@@ -786,16 +786,16 @@
   </div>
 
   <nav>
-    <button class="nav-btn active" onclick="showPage('targets')" id="nav-targets"><span class="icon">🎯</span>Cibles</button>
-    <button class="nav-btn" onclick="showPage('chart')" id="nav-chart"><span class="icon">📈</span>Courbes</button>
-    <button class="nav-btn" onclick="showPage('planner')" id="nav-planner"><span class="icon">🗓️</span>Planification</button>
-    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings"><span class="icon">⚙️</span>Config</button>
-    <button class="nav-btn" onclick="showPage('info')" id="nav-info"><span class="icon">ℹ️</span>Infos</button>
+    <button class="nav-btn active" onclick="showPage('targets')" id="nav-targets"><span class="icon">🎯</span><span data-i18n="nav.targets">Cibles</span></button>
+    <button class="nav-btn" onclick="showPage('chart')" id="nav-chart"><span class="icon">📈</span><span data-i18n="nav.chart">Courbes</span></button>
+    <button class="nav-btn" onclick="showPage('planner')" id="nav-planner"><span class="icon">🗓️</span><span data-i18n="nav.planner">Planification</span></button>
+    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings"><span class="icon">⚙️</span><span data-i18n="nav.settings">Config</span></button>
+    <button class="nav-btn" onclick="showPage('info')" id="nav-info"><span class="icon">ℹ️</span><span data-i18n="nav.info">Infos</span></button>
   </nav>
 </div>
 
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div><button class="modal-close" onclick="closeModalBtn()">Fermer</button></div>
+  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div><button class="modal-close" onclick="closeModalBtn()" data-i18n="shell.close">Fermer</button></div>
 </div>
 <!-- SCHEMA MODAL (plein écran schéma Infos) -->
 <div id="schema-modal">
