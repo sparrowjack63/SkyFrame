@@ -28,8 +28,8 @@ SkyFrame helps astrophotographers plan their sessions by showing which targets a
 No build step required. Just open `index.html` in a browser:
 
 ```bash
-git clone https://github.com/your-username/skyframe.git
-cd skyframe
+git clone https://github.com/sparrowjack63/SkyFrame.git
+cd SkyFrame
 open index.html   # or use a local HTTP server
 ```
 
