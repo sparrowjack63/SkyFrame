@@ -56,27 +56,31 @@ function isAcc(alt,az){
   return true;
 }
 
+function astroCoreTranslate(key, fallback, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : fallback;
+}
+
 function moon(date){
   const j=jd(date);
   const k=((j-2451550.1)/29.53058867%1+1)%1;
   const ill=Math.round((1-Math.cos(2*Math.PI*k))/2*100);
   let name,icon;
-  if(k<0.03||k>0.97){name="Nouvelle Lune";icon="🌑";}
-  else if(k<0.22){name="Croissant croissant";icon="🌒";}
-  else if(k<0.28){name="1er Quartier";icon="🌓";}
-  else if(k<0.47){name="Gibbeuse croissante";icon="🌔";}
-  else if(k<0.53){name="Pleine Lune";icon="🌕";}
-  else if(k<0.72){name="Gibbeuse décroissante";icon="🌖";}
-  else if(k<0.78){name="Dernier Quartier";icon="🌗";}
-  else{name="Croissant décroissant";icon="🌘";}
+  if(k<0.03||k>0.97){name=astroCoreTranslate('moon.phase.new','Nouvelle Lune');icon="🌑";}
+  else if(k<0.22){name=astroCoreTranslate('moon.phase.waxingCrescent','Croissant croissant');icon="🌒";}
+  else if(k<0.28){name=astroCoreTranslate('moon.phase.firstQuarter','1er Quartier');icon="🌓";}
+  else if(k<0.47){name=astroCoreTranslate('moon.phase.waxingGibbous','Gibbeuse croissante');icon="🌔";}
+  else if(k<0.53){name=astroCoreTranslate('moon.phase.full','Pleine Lune');icon="🌕";}
+  else if(k<0.72){name=astroCoreTranslate('moon.phase.waningGibbous','Gibbeuse décroissante');icon="🌖";}
+  else if(k<0.78){name=astroCoreTranslate('moon.phase.lastQuarter','Dernier Quartier');icon="🌗";}
+  else{name=astroCoreTranslate('moon.phase.waningCrescent','Croissant décroissant');icon="🌘";}
   return{ill,name,icon};
 }
 
 function moonImpact(ill){
-  if(ill<20) return{cls:'ok',txt:'Ciel sombre — idéal'};
-  if(ill<50) return{cls:'warn',txt:'Filtre conseillé'};
-  if(ill<80) return{cls:'warn',txt:'Double bande recommandé'};
-  return{cls:'bad',txt:'Double bande obligatoire'};
+  if(ill<20) return{cls:'ok',txt:astroCoreTranslate('moon.impact.darkIdeal','Ciel sombre — idéal')};
+  if(ill<50) return{cls:'warn',txt:astroCoreTranslate('moon.impact.filterRecommended','Filtre conseillé')};
+  if(ill<80) return{cls:'warn',txt:astroCoreTranslate('moon.impact.dualbandRecommended','Double bande recommandé')};
+  return{cls:'bad',txt:astroCoreTranslate('moon.impact.dualbandRequired','Double bande obligatoire')};
 }
 
 function lightPollutionScore(t){
@@ -106,11 +110,11 @@ function lightPollutionScore(t){
   // Convertir en 1-5 étoiles (pollution=0 → 5★, pollution=1 → 1★)
   const stars = Math.max(1, Math.min(5, Math.round(5 - pollution * 4)));
   let label, cls;
-  if(stars >= 5){ label='Nuit optimale'; cls='ok'; }
-  else if(stars === 4){ label='Très bonne nuit'; cls='ok'; }
-  else if(stars === 3){ label='Bonne nuit'; cls='warn'; }
-  else if(stars === 2){ label='Nuit dégradée'; cls='warn'; }
-  else { label='Pleine lune'; cls='bad'; }
+  if(stars >= 5){ label=astroCoreTranslate('catalog.pollution.optimal','Nuit optimale'); cls='ok'; }
+  else if(stars === 4){ label=astroCoreTranslate('catalog.pollution.veryGood','Très bonne nuit'); cls='ok'; }
+  else if(stars === 3){ label=astroCoreTranslate('catalog.pollution.good','Bonne nuit'); cls='warn'; }
+  else if(stars === 2){ label=astroCoreTranslate('catalog.pollution.degraded','Nuit dégradée'); cls='warn'; }
+  else { label=astroCoreTranslate('catalog.pollution.fullMoon','Pleine lune'); cls='bad'; }
   return { stars, label, cls, moonFrac: Math.round(moonFrac*100), ill };
 }
 
@@ -120,14 +124,14 @@ function hasFilterFamily(key){
 
 function recFilter(obj,ill){
   if(obj.emission){
-    if(hasFilterFamily('dualband')) return {name:FILTER_LABELS.dualband,reason:'Nébuleuse Hα/OIII'};
-    if(hasFilterFamily('narrowband')) return {name:FILTER_LABELS.narrowband,reason:'Imagerie émission spécialisée'};
+    if(hasFilterFamily('dualband')) return {name:FILTER_LABELS.dualband,reason:astroCoreTranslate('filter.reason.emissionHaOiii','Nébuleuse Hα/OIII')};
+    if(hasFilterFamily('narrowband')) return {name:FILTER_LABELS.narrowband,reason:astroCoreTranslate('filter.reason.specializedEmission','Imagerie émission spécialisée')};
   }
   if(!obj.emission){
-    if(hasFilterFamily('lightpollution')) return {name:FILTER_LABELS.lightpollution,reason:ill>70?'Continuum sous pollution lumineuse':'Continuum optimisé'};
-    if(hasFilterFamily('neutral')) return {name:FILTER_LABELS.neutral,reason:'Galaxie / amas / réflexion'};
+    if(hasFilterFamily('lightpollution')) return {name:FILTER_LABELS.lightpollution,reason:ill>70?astroCoreTranslate('filter.reason.continuumLightPollution','Continuum sous pollution lumineuse'):astroCoreTranslate('filter.reason.continuumOptimized','Continuum optimisé')};
+    if(hasFilterFamily('neutral')) return {name:FILTER_LABELS.neutral,reason:astroCoreTranslate('filter.reason.galaxyClusterReflection','Galaxie / amas / réflexion')};
   }
-  return{name:'Aucun disponible',reason:'—'};
+  return{name:astroCoreTranslate('filter.noneAvailable','Aucun disponible'),reason:'—'};
 }
 
 function canShoot(obj,ill){

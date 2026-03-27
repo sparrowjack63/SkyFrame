@@ -1,6 +1,10 @@
 // js/astro/night.js — Calculs soleil, crépuscule, nuit astronomique, Lune (profil + événements)
 // Pas de dépendance au DOM — fonctions pures
 
+function astroNightTranslate(key, fallback, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : fallback;
+}
+
 function sunAlt(jdv, lat, lon){
   const n=jdv-2451545.0;
   const L=(280.460+0.9856474*n)%360;
@@ -124,7 +128,7 @@ function getMoonTimelineEvents(nb, tbase, startHour=nb.sunset, endHour=nb.sunris
   const moonProfile=moonNightProfile(nb,tbase,steps,spanH,startHour);
   const events=[];
   const first=moonProfile[0], last=moonProfile[moonProfile.length-1];
-  if(first && first.moonAlt>0) events.push({type:'moon-up', h:startHour, label:'🌙 déjà levée'});
+  if(first && first.moonAlt>0) events.push({type:'moon-up', h:startHour, label:'🌙 ' + astroNightTranslate('moon.event.alreadyUp','déjà levée')});
   for(let i=1;i<moonProfile.length;i++){
     const prev=moonProfile[i-1], cur=moonProfile[i];
     const crossesRise = prev.moonAlt<=0 && cur.moonAlt>0;
@@ -137,7 +141,7 @@ function getMoonTimelineEvents(nb, tbase, startHour=nb.sunset, endHour=nb.sunris
       if(crossesSet)  events.push({type:'moon-set',  h:hCross, label:'🌙↓ '+fmtH(hCross)});
     }
   }
-  if(last && last.moonAlt>0) events.push({type:'moon-up-end', h:endHour, label:'🌙 présente à l’aube'});
+  if(last && last.moonAlt>0) events.push({type:'moon-up-end', h:endHour, label:'🌙 ' + astroNightTranslate('moon.event.presentAtDawn','présente à l’aube')});
   return {events, moonProfile};
 }
 
@@ -151,13 +155,13 @@ function getPlannerLightSegments(nb, tbase, axisStart=nb.sunset, axisEnd=nb.sunr
     const tc=getDateForNightHour(h, tbase);
     const astroDark=h>=nb.astroDusk && h<=nb.astroDawn;
     const lightsOff=isLightsOff(h);
-    const lightsLabel=S.lightingMode==='none'?'sans éclairage':S.lightingMode==='always_on'?'éclairage actif':(S.lightingLabel||'lumières éteintes');
+    const lightsLabel=S.lightingMode==='none'?astroNightTranslate('lighting.none','sans éclairage'):S.lightingMode==='always_on'?astroNightTranslate('lighting.active','éclairage actif'):(S.lightingLabel||astroNightTranslate('lighting.off','lumières éteintes'));
     const moonAlt=moonAltAtTime(tc);
-    let cls='glow-high', label='gêne forte';
-    if(lightsOff && astroDark && moonAlt<=0){ cls='glow-off'; label=lightsLabel+' · ciel sombre'; }
-    else if(lightsOff && astroDark && moonIll<35 && moonAlt<=18){ cls='glow-low'; label=lightsLabel+' · gêne faible'; }
-    else if(lightsOff && astroDark){ cls='glow-mid'; label=lightsLabel+' · gêne modérée'; }
-    else if(lightsOff || astroDark){ cls='glow-mid'; label=lightsOff?lightsLabel+' partiel':'crépuscule / lune'; }
+    let cls='glow-high', label=astroNightTranslate('lighting.disturbance.high','gêne forte');
+    if(lightsOff && astroDark && moonAlt<=0){ cls='glow-off'; label=lightsLabel+' · '+astroNightTranslate('lighting.sky.dark','ciel sombre'); }
+    else if(lightsOff && astroDark && moonIll<35 && moonAlt<=18){ cls='glow-low'; label=lightsLabel+' · '+astroNightTranslate('lighting.disturbance.low','gêne faible'); }
+    else if(lightsOff && astroDark){ cls='glow-mid'; label=lightsLabel+' · '+astroNightTranslate('lighting.disturbance.moderate','gêne modérée'); }
+    else if(lightsOff || astroDark){ cls='glow-mid'; label=lightsOff?lightsLabel+' '+astroNightTranslate('lighting.partial','partiel'):astroNightTranslate('lighting.twilightMoon','crépuscule / lune'); }
     if(!current || current.cls!==cls || current.label!==label){
       if(current) current.to=h;
       current={from:h,to:h,cls,label};

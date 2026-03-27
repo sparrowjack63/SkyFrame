@@ -397,7 +397,7 @@ function drawChart(){
   {
     const d = getBaseDate();
     const dayStr = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
-    const dateLabel = dateOffset === 0 ? `Nuit du ${dayStr}` : `Prévision ${dayStr} (${dateOffset>0?'+':''}${dateOffset}j)`;
+    const dateLabel = dateOffset === 0 ? skyFrameChartTranslate('chart.date.nightOf', { day: dayStr }) : skyFrameChartTranslate('chart.date.forecast', { day: dayStr, offset: `${dateOffset>0?'+':''}${dateOffset}` });
     ctx.fillStyle = dateOffset === 0 ? 'rgba(160,160,160,.5)' : 'rgba(0,230,150,.8)';
     ctx.font = '9px "Space Mono"';
     ctx.textAlign = 'right';
@@ -412,7 +412,7 @@ function drawChart(){
     ctx.strokeStyle='rgba(105,240,174,.95)';ctx.lineWidth=2;ctx.setLineDash([3,3]);
     ctx.beginPath();ctx.moveTo(x,P.t);ctx.lineTo(x,P.t+cH);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#69f0ae';ctx.font='bold 10px "Space Mono"';ctx.textAlign='center';
-    ctx.fillText('NOW',x,P.t-5);
+    ctx.fillText(skyFrameChartTranslate('chart.nowMarker'),x,P.t-5);
   }
 
   // Object curves
@@ -427,7 +427,7 @@ function drawChart(){
 
   // Update label and count
   const filterNames={'all':skyFrameChartTranslate('filter.all'),'nebula':skyFrameChartTranslate('filter.nebulaPlural'),'galaxy':skyFrameChartTranslate('filter.galaxyPlural'),'cluster':skyFrameChartTranslate('filter.clusterPlural'),
-    'planetary':skyFrameChartTranslate('filter.planetaryPlural'),'snr':'SNR','sh2':'Sharpless','lextreme':skyFrameChartTranslate('filter.dualband'),'rgb':skyFrameChartTranslate('filter.continuum'),'accessible':skyFrameChartTranslate('filter.accessiblePlural'),
+    'planetary':skyFrameChartTranslate('filter.planetaryPlural'),'snr':skyFrameChartTranslate('filter.snr'),'sh2':skyFrameChartTranslate('filter.sh2'),'planet':skyFrameChartTranslate('filter.planetPlural'),'dualband':skyFrameChartTranslate('filter.dualband'),'lightpollution':skyFrameChartTranslate('filter.family.lightpollution'),'lextreme':skyFrameChartTranslate('filter.dualband'),'rgb':skyFrameChartTranslate('filter.continuum'),'accessible':skyFrameChartTranslate('filter.accessiblePlural'),
     'spring':skyFrameChartTranslate('filter.spring'),'summer':skyFrameChartTranslate('filter.summer'),'autumn':skyFrameChartTranslate('filter.autumn'),'winter':skyFrameChartTranslate('filter.winter'),'stars1':'⭐ 1','stars2':'⭐⭐ 2','stars3':'⭐⭐⭐ 3','stars4':'⭐⭐⭐⭐ 4','stars5':'⭐⭐⭐⭐⭐ 5'};
   const matchedCount=searchMatchedIds.size;
   const lbl=document.getElementById('chart-filter-label');
@@ -570,8 +570,8 @@ function drawChart(){
 
     // Label pill au pic accessible
     if(pk){
-      const statusSuffix = accessibleFilter ? (nowAccessible ? ' • now' : (hasNightAccess ? ' • +tard' : '')) : '';
-      const searchSuffix = highlightedBySearch ? ' • match' : '';
+      const statusSuffix = accessibleFilter ? (nowAccessible ? ' • '+skyFrameChartTranslate('chart.status.now') : (hasNightAccess ? ' • '+skyFrameChartTranslate('chart.status.later') : '')) : '';
+      const searchSuffix = highlightedBySearch ? ' • '+skyFrameChartTranslate('chart.status.match') : '';
       const baseLabel = hov ? co.fullName.substring(0,28) : co.label;
       const label = (baseLabel + statusSuffix + searchSuffix).substring(0, hov ? 34 : 28);
       const fsize = hov ? 9 : 8;

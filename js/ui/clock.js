@@ -23,7 +23,7 @@ function updateClock(){
   const imp=moonImpact(mp.ill);
   document.getElementById('moon-icon').textContent=mp.icon;
   document.getElementById('moon-phase').textContent=mp.name;
-  document.getElementById('moon-details').textContent=`Illumination : ${mp.ill}% · ${imp.txt}`;
+  document.getElementById('moon-details').textContent=SkyFrameI18n.translate('moon.details', { illumination: mp.ill, impact: imp.txt });
   document.getElementById('moon-chip').textContent=`${mp.icon} ${mp.ill}%`;
   document.getElementById('moon-chip').className=`chip ${imp.cls}`;
   document.getElementById('chip-moon').textContent=`${mp.icon} ${mp.ill}%`;
@@ -35,7 +35,7 @@ function updateClock(){
   if(pollEl){
     pollEl.textContent = `💡 ${starsStr}`;
     pollEl.className = `chip ${lps.cls}`;
-    pollEl.title = `${lps.label} · Lune ${lps.ill}% · présente ${lps.moonFrac}% de la nuit noire`;
+    pollEl.title = SkyFrameI18n.translate('catalog.pollution.title', { label: lps.label, illumination: lps.ill, presence: lps.moonFrac });
   }
   drawNightTimeline();
 }
@@ -223,8 +223,13 @@ function jumpTo(h,m){ jumpToH(h+(h<12?24:0)+m/60); }
 
 document.addEventListener('skyframe:languagechange', function() {
   updateDateNavUI();
+  updateClock();
   if (!simTime) {
     const sliderLabel = document.getElementById('slider-label');
     if (sliderLabel) sliderLabel.textContent = SkyFrameI18n.translate('shell.live');
   }
+  if(typeof renderCatalogStatsPanel==='function') renderCatalogStatsPanel();
+  if(typeof renderTargets==='function' && currentPage==='targets') renderTargets();
+  if(currentPage==='chart' && typeof drawChart==='function') drawChart();
+  if(currentPage==='planner' && typeof renderPlanner==='function') renderPlanner();
 });

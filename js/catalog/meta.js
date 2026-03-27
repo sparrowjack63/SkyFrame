@@ -46,6 +46,10 @@ function isCompositionEntry(o){
   return !!(o && ((o.cat&&String(o.cat).startsWith('Comp')) || (Array.isArray(o.groupMembers)&&o.groupMembers.length)));
 }
 
+function catalogMetaTranslate(key, fallback, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : fallback;
+}
+
 function formatCatalogTimestamp(ts){
   if(!ts) return '—';
   const d=new Date(ts);
@@ -54,12 +58,12 @@ function formatCatalogTimestamp(ts){
 
 function getCatalogCacheLabel(){
   const st=CATALOG_RUNTIME_STATE.cacheState;
-  if(st==='hit') return 'cache local utilisé';
-  if(st==='refreshed') return 'cache rafraîchi';
-  if(st==='stale') return 'cache expiré';
-  if(st==='stale-error') return 'cache expiré, fallback';
-  if(st==='unavailable') return 'cache indisponible';
-  return 'sans cache';
+  if(st==='hit') return catalogMetaTranslate('catalog.cache.hit', 'cache local utilisé');
+  if(st==='refreshed') return catalogMetaTranslate('catalog.cache.refreshed', 'cache rafraîchi');
+  if(st==='stale') return catalogMetaTranslate('catalog.cache.stale', 'cache expiré');
+  if(st==='stale-error') return catalogMetaTranslate('catalog.cache.staleFallback', 'cache expiré, fallback');
+  if(st==='unavailable') return catalogMetaTranslate('catalog.cache.unavailable', 'cache indisponible');
+  return catalogMetaTranslate('catalog.cache.none', 'sans cache');
 }
 
 function getCatalogLocalComplementCounts(){
@@ -97,26 +101,27 @@ function renderCatalogStatsPanel(){
   const infoEl=document.getElementById('catalog-info');
   if(!stateGrid||!sourceList||!breakdownGrid||!infoEl) return;
   const stats=getCatalogStatsSnapshot();
-  const mainSource=CATALOG_RUNTIME_STATE.source==='openngc' ? 'OpenNGC dynamique' : 'fallback local';
-  const modeLabel=CATALOG_RUNTIME_STATE.mode==='enriched' ? 'catalogue enrichi' : 'fallback local';
-  infoEl.textContent=`${stats.totalAvailable} objets actifs · ${stats.retainedTotal} retenus (${stats.retainedBaseCount<=CATALOG_TOP_N?`top ${CATALOG_TOP_N}`:`sélection`} + ${stats.companionCount} compagnon${stats.companionCount>1?'s':''})`;
+  const mainSource=CATALOG_RUNTIME_STATE.source==='openngc' ? catalogMetaTranslate('catalog.source.dynamicOpenNgc', 'OpenNGC dynamique') : catalogMetaTranslate('catalog.source.localFallback', 'fallback local');
+  const modeLabel=CATALOG_RUNTIME_STATE.mode==='enriched' ? catalogMetaTranslate('catalog.mode.enriched', 'catalogue enrichi') : catalogMetaTranslate('catalog.source.localFallback', 'fallback local');
+  infoEl.textContent=catalogMetaTranslate('catalog.info.summary', '');
+  infoEl.textContent = catalogMetaTranslate('catalog.info.summary', { totalAvailable: stats.totalAvailable, retainedTotal: stats.retainedTotal, selection: stats.retainedBaseCount<=CATALOG_TOP_N ? catalogMetaTranslate('catalog.selection.top', 'top {{value}}', { value: CATALOG_TOP_N }) : catalogMetaTranslate('catalog.selection.selection', 'sélection'), companionCount: stats.companionCount, companionSuffix: stats.companionCount>1?'s':'' });
   stateGrid.innerHTML=[
-    {k:'Objets disponibles',v:stats.totalAvailable,s:'catalogue réellement chargé'},
-    {k:'Objets retenus',v:stats.retainedTotal,s:`base ${stats.retainedBaseCount} · compagnons ${stats.companionCount}`},
-    {k:'Top-N configuré',v:CATALOG_TOP_N,s:'sélection principale avant ajouts forcés'},
-    {k:'Accessibles maintenant',v:stats.accessibleNow,s:`au ${String(stats.t.getHours()).padStart(2,'0')}h${String(stats.t.getMinutes()).padStart(2,'0')}${simTime?' (simulation)':''}`},
+    {k:catalogMetaTranslate('catalog.state.available', 'Objets disponibles'),v:stats.totalAvailable,s:catalogMetaTranslate('catalog.state.availableSub', 'catalogue réellement chargé')},
+    {k:catalogMetaTranslate('catalog.state.retained', 'Objets retenus'),v:stats.retainedTotal,s:catalogMetaTranslate('catalog.state.retainedSub', 'base {{base}} · compagnons {{companions}}', { base: stats.retainedBaseCount, companions: stats.companionCount })},
+    {k:catalogMetaTranslate('catalog.state.topN', 'Top-N configuré'),v:CATALOG_TOP_N,s:catalogMetaTranslate('catalog.state.topNSub', 'sélection principale avant ajouts forcés')},
+    {k:catalogMetaTranslate('catalog.state.accessibleNow', 'Accessibles maintenant'),v:stats.accessibleNow,s:catalogMetaTranslate('catalog.state.accessibleNowSub', 'à {{time}}{{mode}}', { time: `${String(stats.t.getHours()).padStart(2,'0')}h${String(stats.t.getMinutes()).padStart(2,'0')}`, mode: simTime ? ' '+catalogMetaTranslate('targets.count.modeSimulation','(simulation)') : '' })},
   ].map(item=>`<div class="catalog-stat-box"><div class="catalog-stat-k">${item.k}</div><div class="catalog-stat-v">${item.v}</div><div class="catalog-stat-s">${item.s}</div></div>`).join('');
   sourceList.innerHTML=[
-    ['Source principale',`${mainSource} · ${CATALOG_RUNTIME_STATE.primaryCount||0} objets`],
-    ['Compléments locaux',`${stats.local.customObjects} objets custom · ${stats.local.compositions} compositions/groupes · ${stats.local.editorial} métadonnées éditoriales`],
-    ['Cache / refresh',`${getCatalogCacheLabel()} · dernier refresh ${formatCatalogTimestamp(CATALOG_RUNTIME_STATE.lastRefreshTs||CATALOG_RUNTIME_STATE.cacheTs)}`],
-    ['Mode courant',modeLabel],
+    [catalogMetaTranslate('catalog.inline.mainSource', 'Source principale'),catalogMetaTranslate('catalog.inline.mainSourceValue', '{{source}} · {{count}} objets', { source: mainSource, count: CATALOG_RUNTIME_STATE.primaryCount||0 })],
+    [catalogMetaTranslate('catalog.inline.localComplements', 'Compléments locaux'),catalogMetaTranslate('catalog.inline.localComplementsValue', '{{custom}} objets custom · {{compositions}} compositions/groupes · {{editorial}} métadonnées éditoriales', { custom: stats.local.customObjects, compositions: stats.local.compositions, editorial: stats.local.editorial })],
+    [catalogMetaTranslate('catalog.inline.cache', 'Cache / refresh'),catalogMetaTranslate('catalog.inline.cacheValue', '{{cache}} · dernier refresh {{date}}', { cache: getCatalogCacheLabel(), date: formatCatalogTimestamp(CATALOG_RUNTIME_STATE.lastRefreshTs||CATALOG_RUNTIME_STATE.cacheTs) })],
+    [catalogMetaTranslate('catalog.inline.mode', 'Mode courant'),modeLabel],
   ].map(([label,val])=>`<div class="catalog-inline-item"><div class="catalog-inline-label">${label}</div><div class="catalog-inline-value">${val}</div></div>`).join('');
   breakdownGrid.innerHTML=[
-    {k:'Galaxies',v:stats.repartition.galaxy,s:'dans la sélection retenue'},
-    {k:'Nébuleuses',v:stats.repartition.nebula,s:'émission, réflexion, SNR'},
-    {k:'Amas',v:stats.repartition.cluster,s:'ouverts + globulaires'},
-    {k:'Planétaires',v:stats.repartition.planetary,s:'PN retenues'},
-    {k:'Compositions / groupes',v:stats.repartition.composition,s:'entrées composées ou groupées'},
+    {k:catalogMetaTranslate('catalog.breakdown.galaxies', 'Galaxies'),v:stats.repartition.galaxy,s:catalogMetaTranslate('catalog.breakdown.galaxiesSub', 'dans la sélection retenue')},
+    {k:catalogMetaTranslate('catalog.breakdown.nebulae', 'Nébuleuses'),v:stats.repartition.nebula,s:catalogMetaTranslate('catalog.breakdown.nebulaeSub', 'émission, réflexion, SNR')},
+    {k:catalogMetaTranslate('catalog.breakdown.clusters', 'Amas'),v:stats.repartition.cluster,s:catalogMetaTranslate('catalog.breakdown.clustersSub', 'ouverts + globulaires')},
+    {k:catalogMetaTranslate('catalog.breakdown.planetaries', 'Planétaires'),v:stats.repartition.planetary,s:catalogMetaTranslate('catalog.breakdown.planetariesSub', 'PN retenues')},
+    {k:catalogMetaTranslate('catalog.breakdown.compositions', 'Compositions / groupes'),v:stats.repartition.composition,s:catalogMetaTranslate('catalog.breakdown.compositionsSub', 'entrées composées ou groupées')},
   ].map(item=>`<div class="catalog-stat-box"><div class="catalog-stat-k">${item.k}</div><div class="catalog-stat-v">${item.v}</div><div class="catalog-stat-s">${item.s}</div></div>`).join('');
 }
