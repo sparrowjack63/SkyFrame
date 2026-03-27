@@ -19,10 +19,6 @@
         <div><div class="logo-text">SKYFRAME</div><div class="logo-sub">Planificateur astrophoto · <span style="color:var(--accent2)">v11.0</span> · 2026-03-23</div></div>
       </div>
       <div class="header-right">
-        <div class="lang-switcher" aria-label="Language switcher">
-          <button class="lang-btn active" data-lang-btn="fr" onclick="setLanguage('fr')">FR</button>
-          <button class="lang-btn" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
-        </div>
         <div class="theme-switcher" id="theme-switcher">
           <button class="th-btn active" id="th-night" onclick="setTheme('night')" title="Nuit">🌑</button>
           <button class="th-btn" id="th-dim"   onclick="setTheme('dim')"   title="Dim">🌒</button>
@@ -786,10 +782,6 @@
   </div>
 
   <nav>
-    <div class="lang-switcher mobile-lang-switcher" aria-label="Language switcher">
-      <button class="lang-btn active" data-lang-btn="fr" onclick="setLanguage('fr')">FR</button>
-      <button class="lang-btn" data-lang-btn="en" onclick="setLanguage('en')">EN</button>
-    </div>
     <button class="nav-btn active" onclick="showPage('targets')" id="nav-targets"><span class="icon">🎯</span>Cibles</button>
     <button class="nav-btn" onclick="showPage('chart')" id="nav-chart"><span class="icon">📈</span>Courbes</button>
     <button class="nav-btn" onclick="showPage('planner')" id="nav-planner"><span class="icon">🗓️</span>Planification</button>
@@ -817,9 +809,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="./js/i18n/core.js"></script>
-<script src="./js/i18n/locales/fr.js"></script>
-<script src="./js/i18n/locales/en.js"></script>
 <script src="./js/config.js"></script>
 <script src="./js/data/planets.js"></script>
 <script src="./js/data/ratings.js"></script>
