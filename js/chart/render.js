@@ -13,6 +13,10 @@ const CHART_PALETTE = [
 
 // js/chart/render.js — Rendu canvas altitude + timeline nuit
 
+function skyFrameChartTranslate(key, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : key;
+}
+
 function getChartObjs(){
   // Source = planètes dynamiques + liste catalogue visible cohérente avec l'onglet Cibles
   // La recherche n'exclut pas les courbes : elle sert à mettre en avant les matches.
@@ -151,10 +155,10 @@ function renderChartSearchInfoPanel(entries, searchHasMatch){
   const currentAlt=Math.round((o.alt??entry.pts.find(p=>p.acc)?.alt??entry.pts[0]?.alt??0));
   const currentAz=Math.round((o.az??entry.pts[0]?.az??0));
   const stars=rt.stars?`${'★'.repeat(rt.stars)}<span style="opacity:.22">${'★'.repeat(5-rt.stars)}</span>`:'—';
-  const typeLabel={nebula:'Nébuleuse',galaxy:'Galaxie',cluster:'Amas',planetary:'Planétaire',snr:'Rémanent',planet:'Planète'}[o.type]||o.type||'—';
+  const typeLabel={nebula:skyFrameChartTranslate('chart.type.nebula'),galaxy:skyFrameChartTranslate('chart.type.galaxy'),cluster:skyFrameChartTranslate('chart.type.cluster'),planetary:skyFrameChartTranslate('chart.type.planetary'),snr:skyFrameChartTranslate('chart.type.snr'),planet:skyFrameChartTranslate('chart.type.planet')}[o.type]||o.type||'—';
   const scoreLabel=score===null?'—':`${Math.round(score)}/100`;
   const filterLabel=o.cat==='Planet'?'—':(recFilter(o)||o.filter||'—');
-  const planningBtnLabel=isInPlanning(o.id)?'✅ Déjà dans la planification':'➕ Ajouter à la planification';
+  const planningBtnLabel=isInPlanning(o.id)?skyFrameChartTranslate('planner.action.alreadyInPlanner'):skyFrameChartTranslate('planner.action.addToPlanner');
   const planningBtnColor=isInPlanning(o.id)?'#69f0ae':'var(--gold)';
   const planningBtnBorder=isInPlanning(o.id)?'rgba(105,240,174,.4)':'rgba(255,213,79,.35)';
   const compParts=[];
@@ -163,26 +167,26 @@ function renderChartSearchInfoPanel(entries, searchHasMatch){
   const compLabel=compParts.length?[...new Set(compParts)].join(' · '):'—';
   const astroBinUrl=getAstroBinSearchUrl(o);
   const chips=[
-    ['Type', typeLabel],
-    ['Note', `${stars}${rt.tag?` <span style="font-size:10px;opacity:.8">${rt.tag}</span>`:''}`],
-    ['Score', scoreLabel],
-    ['Filtre', filterLabel],
-    ['Altitude', `${currentAlt}° · az ${currentAz}°`],
-    ['Fenêtre', windows.accessible],
-    ['Optimal', windows.optimal==='—'?'Pas de créneau idéal':windows.optimal],
-    ['Compagnons', compLabel]
+    [skyFrameChartTranslate('chart.info.type'), typeLabel],
+    [skyFrameChartTranslate('chart.info.rating'), `${stars}${rt.tag?` <span style="font-size:10px;opacity:.8">${rt.tag}</span>`:''}`],
+    [skyFrameChartTranslate('chart.info.score'), scoreLabel],
+    [skyFrameChartTranslate('chart.info.filter'), filterLabel],
+    [skyFrameChartTranslate('chart.info.altitude'), skyFrameChartTranslate('chart.info.altAzValue', { alt: currentAlt, az: currentAz })],
+    [skyFrameChartTranslate('chart.info.window'), windows.accessible],
+    [skyFrameChartTranslate('chart.info.optimal'), windows.optimal==='—'?skyFrameChartTranslate('chart.info.noOptimal'):windows.optimal],
+    [skyFrameChartTranslate('chart.info.companions'), compLabel]
   ];
   panel.innerHTML=`
     <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px;">
       <div>
-        <div style="font:700 11px var(--mono);letter-spacing:.08em;color:var(--accent);margin-bottom:4px;">MATCH PRINCIPAL DANS COURBES</div>
+        <div style="font:700 11px var(--mono);letter-spacing:.08em;color:var(--accent);margin-bottom:4px;">${skyFrameChartTranslate('chart.search.mainMatch')}</div>
         <div style="font-size:18px;font-weight:800;color:var(--text);line-height:1.2;">${formatDisplayName(o)}</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:4px;">Recherche “${q.replace(/</g,'&lt;')}” · ${candidates.length} match${candidates.length>1?'es':''}</div>
-        ${(o.secondaryId&&o.secondaryId!==o.id)?`<div style="font-size:10px;color:var(--text3);margin-top:4px;">ID canonique: ${o.id} · secondaire: ${formatCatalogIdForSearch(o.secondaryId)}</div>`:`<div style="font-size:10px;color:var(--text3);margin-top:4px;">ID canonique: ${o.id}</div>`}
+        <div style="font-size:11px;color:var(--text2);margin-top:4px;">${skyFrameChartTranslate('chart.search.summary', { query: q.replace(/</g,'&lt;'), count: candidates.length, suffix: candidates.length>1?'es':'' })}</div>
+        ${(o.secondaryId&&o.secondaryId!==o.id)?`<div style="font-size:10px;color:var(--text3);margin-top:4px;">${skyFrameChartTranslate('chart.search.canonicalSecondary', { id: o.id, secondary: formatCatalogIdForSearch(o.secondaryId) })}</div>`:`<div style="font-size:10px;color:var(--text3);margin-top:4px;">${skyFrameChartTranslate('chart.search.canonicalOnly', { id: o.id })}</div>`}
       </div>
       <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">
         <button type="button" onclick="addToPlannerById('${o.id}','courbes')" style="align-self:flex-start;color:${planningBtnColor};background:rgba(255,255,255,.03);text-decoration:none;border:1px solid ${planningBtnBorder};border-radius:999px;padding:6px 10px;font:600 11px var(--mono);cursor:pointer;">${planningBtnLabel}</button>
-        ${astroBinUrl?`<a href="${astroBinUrl}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start;color:var(--accent);text-decoration:none;border:1px solid rgba(79,195,247,.35);border-radius:999px;padding:6px 10px;font:600 11px var(--mono);">🔗 AstroBin</a>`:''}
+        ${astroBinUrl?`<a href="${astroBinUrl}" target="_blank" rel="noopener noreferrer" style="align-self:flex-start;color:var(--accent);text-decoration:none;border:1px solid rgba(79,195,247,.35);border-radius:999px;padding:6px 10px;font:600 11px var(--mono);">🔗 ${skyFrameChartTranslate('chart.search.astrobin')}</a>`:''}
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;">
@@ -422,18 +426,18 @@ function drawChart(){
   const searchHasMatch=searchActive && searchMatchedIds.size>0;
 
   // Update label and count
-  const filterNames={'all':'Tous','nebula':'Nébuleuses','galaxy':'Galaxies','cluster':'Amas',
-    'planetary':'Planétaires','snr':'SNR','sh2':'Sharpless','lextreme':'Double bande','rgb':'Continuum','accessible':'Accessibles',
-    'spring':'Printemps','summer':'Été','autumn':'Automne','winter':'Hiver','stars1':'⭐ 1','stars2':'⭐⭐ 2','stars3':'⭐⭐⭐ 3','stars4':'⭐⭐⭐⭐ 4','stars5':'⭐⭐⭐⭐⭐ 5'};
+  const filterNames={'all':skyFrameChartTranslate('filter.all'),'nebula':skyFrameChartTranslate('filter.nebulaPlural'),'galaxy':skyFrameChartTranslate('filter.galaxyPlural'),'cluster':skyFrameChartTranslate('filter.clusterPlural'),
+    'planetary':skyFrameChartTranslate('filter.planetaryPlural'),'snr':'SNR','sh2':'Sharpless','lextreme':skyFrameChartTranslate('filter.dualband'),'rgb':skyFrameChartTranslate('filter.continuum'),'accessible':skyFrameChartTranslate('filter.accessiblePlural'),
+    'spring':skyFrameChartTranslate('filter.spring'),'summer':skyFrameChartTranslate('filter.summer'),'autumn':skyFrameChartTranslate('filter.autumn'),'winter':skyFrameChartTranslate('filter.winter'),'stars1':'⭐ 1','stars2':'⭐⭐ 2','stars3':'⭐⭐⭐ 3','stars4':'⭐⭐⭐⭐ 4','stars5':'⭐⭐⭐⭐⭐ 5'};
   const matchedCount=searchMatchedIds.size;
   const lbl=document.getElementById('chart-filter-label');
-  if(lbl) lbl.textContent=`Filtre: ${filterNames[currentFilter]||currentFilter} — ${OBJS.length} objet${OBJS.length>1?'s':''}${searchActive?` · recherche: ${matchedCount}`:''}`;
+  if(lbl) lbl.textContent=skyFrameChartTranslate('chart.filterLabel', { filter: filterNames[currentFilter]||currentFilter, count: OBJS.length, suffix: OBJS.length>1?'s':'', search: searchActive?skyFrameChartTranslate('chart.filterSearchSuffix', { count: matchedCount }):'' });
   const cnt=document.getElementById('chart-obj-count');
   if(cnt) cnt.textContent=searchActive
     ? (searchHasMatch
-        ? `🔎 ${matchedCount} courbe${matchedCount>1?'s':''} mise${matchedCount>1?'s':''} en avant · les autres restent visibles en retrait`
-        : `🔎 Aucun match pour “${objectSearch}” — toutes les courbes restent visibles`)
-    : (OBJS.length>30?`ℹ️ ${OBJS.length} courbes — utilisez un filtre pour affiner la vue`:'' );
+        ? skyFrameChartTranslate('chart.count.matchesVisible', { count: matchedCount, suffix: matchedCount>1?'s':'', pluralE: matchedCount>1?'s':'' })
+        : skyFrameChartTranslate('chart.count.noMatch', { query: objectSearch }))
+    : (OBJS.length>30?skyFrameChartTranslate('chart.count.tooMany', { count: OBJS.length }):'' );
 
 
   // ── Impact lunaire binaire style Stellarium ─────────────────────────────────
@@ -636,6 +640,10 @@ function drawChart(){
   if(fsLbl) fsLbl.textContent=document.getElementById('chart-filter-label')?.textContent||'';
   chartDrawn=true;
 }
+
+document.addEventListener('skyframe:languagechange', function() {
+  if(currentPage==='chart') drawChart();
+});
 
 function drawNightTimeline(){
   const nb = getOrComputeNightBounds();

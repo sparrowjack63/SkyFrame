@@ -1,5 +1,9 @@
 // js/chart/hover.js — Interaction hover/touch canvas
 
+function skyFrameChartHoverTranslate(key, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : key;
+}
+
 function hideMobileActionBar(){
   const bar=document.getElementById('chart-mobile-action-bar');
   if(bar) bar.style.display='none';
@@ -15,7 +19,7 @@ function updateMobileActionBar(o){
   if(nameEl) nameEl.textContent=formatDisplayName(o);
   const btn=document.getElementById('chart-mobile-plan-btn');
   if(btn){
-    btn.textContent=inPlan?'✅ Déjà planifié':'➕ Planifier';
+    btn.textContent=inPlan?skyFrameChartHoverTranslate('planner.action.alreadyPlanned'):skyFrameChartHoverTranslate('planner.action.plan');
     btn.className='chart-mobile-plan-btn'+(inPlan?' in-plan':'');
     btn.onclick=()=>{addToPlannerById(o.id,'courbes');updateMobileActionBar(o);};
   }
@@ -144,7 +148,7 @@ function onChartHover(e, canvas){
       const planHtml=(o.cat!=='Planet')
         ? `<div style="margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.12);">
             <button id="chart-tip-plan-btn" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid ${tipInPlan?'rgba(105,240,174,.4)':'rgba(255,213,79,.35)'};background:rgba(255,255,255,.04);color:${tipInPlan?'#69f0ae':'var(--gold)'};font:600 12px/1 var(--mono);cursor:pointer;min-height:38px;text-align:center;">
-              ${tipInPlan?'✅ Déjà planifié':'➕ Planifier'}
+              ${tipInPlan?skyFrameChartHoverTranslate('planner.action.alreadyPlanned'):skyFrameChartHoverTranslate('planner.action.plan')}
             </button></div>`
         : '';
       tip.innerHTML=
@@ -152,11 +156,11 @@ function onChartHover(e, canvas){
         (starsHtml?`<div style="color:#ffd54f;font-size:13px;margin-bottom:3px">${starsHtml}</div>`:'')+
         reasonHtml+compHtml+
         `<div style="margin-top:4px;opacity:.7;font-size:9px">${o.type} · ${o.filter||''}</div>`+
-        `<div style="opacity:.7;font-size:9px">Alt: ${Math.round(closestPt.alt)}° · Az: ${Math.round(closestPt.az)}°</div>`+
-        `<div style="opacity:.7;font-size:9px">Fenêtre: ${winStr}</div>`+
+        `<div style="opacity:.7;font-size:9px">${skyFrameChartHoverTranslate('chart.tooltip.altAz', { alt: Math.round(closestPt.alt), az: Math.round(closestPt.az) })}</div>`+
+        `<div style="opacity:.7;font-size:9px">${skyFrameChartHoverTranslate('chart.tooltip.window', { value: winStr })}</div>`+
         (optStr!=='—'
-          ? `<div style="color:#69f0ae;font-size:9px;margin-top:3px">✨ Optimal: ${optStr}</div>`
-          : `<div style="opacity:.45;font-size:9px;margin-top:3px">✨ Optimal: pas de créneau idéal</div>`)+
+          ? `<div style="color:#69f0ae;font-size:9px;margin-top:3px">${skyFrameChartHoverTranslate('chart.tooltip.optimal', { value: optStr })}</div>`
+          : `<div style="opacity:.45;font-size:9px;margin-top:3px">${skyFrameChartHoverTranslate('chart.tooltip.noOptimal')}</div>`)+
         astroBinHtml+planHtml;
       // Lier le bouton planifier du tooltip
       if(o.cat!=='Planet'){
@@ -166,7 +170,7 @@ function onChartHover(e, canvas){
             addToPlannerById(o.id,'courbes');
             if(tipIsMobile) updateMobileActionBar(o);
             const ip=isInPlanning(o.id);
-            planBtn.textContent=ip?'✅ Déjà planifié':'➕ Planifier';
+            planBtn.textContent=ip?skyFrameChartHoverTranslate('planner.action.alreadyPlanned'):skyFrameChartHoverTranslate('planner.action.plan');
             planBtn.style.color=ip?'#69f0ae':'var(--gold)';
             planBtn.style.borderColor=ip?'rgba(105,240,174,.4)':'rgba(255,213,79,.35)';
           };

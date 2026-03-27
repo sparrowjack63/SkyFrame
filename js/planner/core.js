@@ -1,5 +1,8 @@
 // js/planner/core.js — État, calculs, fenêtres de planification
 
+function skyFramePlannerTranslate(key, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : key;
+}
 
 function loadPlannedTargetIds(){
   try{
@@ -18,14 +21,14 @@ function isInPlanning(id){return PLANNED_TARGET_IDS.includes(id);}
 
 function addToPlannerById(id, source='app'){
   const o=resolveObjectById(id,getViewTime());
-  if(!o){showToast('❌ Objet introuvable');return;}
-  if(isInPlanning(id)){showToast(`✅ ${formatDisplayName(o)} déjà dans la planification`); if(currentPage==='planner') renderPlanner(); return;}
+  if(!o){showToast('❌ ' + skyFramePlannerTranslate('planner.toast.objectNotFound'));return;}
+  if(isInPlanning(id)){showToast(`✅ ${skyFramePlannerTranslate('planner.toast.alreadyInPlanner', { name: formatDisplayName(o) })}`); if(currentPage==='planner') renderPlanner(); return;}
   PLANNED_TARGET_IDS.push(id);
   savePlannedTargetIds();
   if(currentPage==='planner') renderPlanner();
   if(currentPage==='chart') drawChart();
   if(currentPage==='targets') renderTargets();
-  showToast(`🗓️ ${formatDisplayName(o)} ajouté via ${source}`);
+  showToast(`🗓️ ${skyFramePlannerTranslate('planner.toast.addedVia', { name: formatDisplayName(o), source: source })}`);
 }
 
 function removeFromPlannerById(id){
@@ -37,7 +40,7 @@ function removeFromPlannerById(id){
   renderPlanner();
   if(currentPage==='chart') drawChart();
   if(currentPage==='targets') renderTargets();
-  showToast(`🗑️ ${o?formatDisplayName(o):id} retiré de la planification`);
+  showToast(`🗑️ ${skyFramePlannerTranslate('planner.toast.removed', { name: o?formatDisplayName(o):id })}`);
 }
 
 function formatDurationMinutes(mins){
@@ -67,13 +70,13 @@ function getPlanningWindowForObject(o, nb, stepMin=5){
     startDate:null,endDate:null,
     rawMinutes:0, usableMinutes:0, exposures:0,
     status:'unavailable',
-    statusLabel:'Pas de fenêtre utile cette nuit',
-    statusDetail:'Pas de fenêtre utile cette nuit',
+    statusLabel:skyFramePlannerTranslate('planner.status.noWindow'),
+    statusDetail:skyFramePlannerTranslate('planner.status.noWindow'),
     isSchedulable:false,
     visibilityReason:'unavailable'
   };
   if(o.cat==='Planet'){
-    return {...base,status:'planet',statusLabel:'Planète hors planification',statusDetail:'Les planètes restent visibles mais ne sont pas encore intégrées au calcul détaillé de planification.',visibilityReason:'planet'};
+    return {...base,status:'planet',statusLabel:skyFramePlannerTranslate('planner.status.planetExcluded'),statusDetail:skyFramePlannerTranslate('planner.status.planetExcludedDetail'),visibilityReason:'planet'};
   }
   const startHour=nb.sunset, endHour=nb.sunrise;
   const totalMin=Math.max(0,Math.round((endHour-startHour)*60));
@@ -95,16 +98,16 @@ function getPlanningWindowForObject(o, nb, stepMin=5){
   if(startDate && !endDate && lastDate) endDate=new Date(lastDate.getTime()+stepMin*60000);
   if(!startDate||!endDate){
     const visibilityReason=anyAboveHorizon?'inaccessible':'below-horizon';
-    const statusLabel=anyAboveHorizon?'Inaccessible':'Pas de fenêtre utile cette nuit';
-    const statusDetail=anyAboveHorizon?'Objet visible dans le ciel mais hors fenêtre exploitable depuis le balcon cette nuit.':'Objet absent ou trop bas pendant toute la nuit utile.';
+    const statusLabel=anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessible'):skyFramePlannerTranslate('planner.status.noWindow');
+    const statusDetail=anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessibleDetail'):skyFramePlannerTranslate('planner.status.tooLowDetail');
     return {...base,status:'unavailable',statusLabel,statusDetail,visibilityReason};
   }
   const raw=Math.max(0,Math.round((endDate-startDate)/60000));
   const usable=Math.max(0,raw-PLAN_TARGET_OVERHEAD_MIN);
   const exposures=Math.floor(usable/PLAN_EXPOSURE_MIN);
   const status=usable>=15?'ok':(usable>=5?'limit':'short');
-  const statusLabel=status==='ok'?'OK':(status==='limit'?'Limite':'Trop court');
-  const statusDetail=status==='ok'?'Fenêtre exploitable correcte cette nuit.':(status==='limit'?'Fenêtre exploitable courte mais encore utilisable.':'Fenêtre trop courte après marge fixe de session.');
+  const statusLabel=status==='ok'?skyFramePlannerTranslate('planner.status.ok'):(status==='limit'?skyFramePlannerTranslate('planner.status.limit'):skyFramePlannerTranslate('planner.status.short'));
+  const statusDetail=status==='ok'?skyFramePlannerTranslate('planner.status.okDetail'):(status==='limit'?skyFramePlannerTranslate('planner.status.limitDetail'):skyFramePlannerTranslate('planner.status.shortDetail'));
   return {
     ...base,
     startDate,endDate,

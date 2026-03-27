@@ -2,6 +2,10 @@ let currentFilter = 'all';
 
 // js/ui/targets.js — Rendu grille cibles et filtres
 
+function skyFrameTargetsTranslate(key, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : key;
+}
+
 function renderTargets(){
   updateClock();
   const t=getViewTime();
@@ -22,13 +26,22 @@ function renderTargets(){
   if(objectSearch) objs=objs.filter(o=>objectMatchesSearch(o));
   const accessible=objs.filter(o=>o.acc&&o.shoot).length;
   const companionCount=getTopNCompanionCount();
-  const topNLabel=companionCount?`top ${CATALOG_TOP_N} + ${companionCount} compagnon${companionCount>1?'s':''}`:`top ${CATALOG_TOP_N}`;
+  const topNLabel=companionCount
+    ? skyFrameTargetsTranslate('targets.count.topWithCompanions', { top: CATALOG_TOP_N, count: companionCount, suffix: companionCount>1?'s':'' })
+    : skyFrameTargetsTranslate('targets.count.topOnly', { top: CATALOG_TOP_N });
   document.getElementById('count-label').textContent=
-    `${objs.length} objets (${topNLabel}) · ${accessible} accessibles · ${String(getViewTime().getHours()).padStart(2,'0')}h${String(getViewTime().getMinutes()).padStart(2,'0')}${simTime?' (simulation)':' (direct)'}${objectSearch?` · recherche: ${objs.length}/${totalBeforeSearch}`:''}`;
+    skyFrameTargetsTranslate('targets.count.summary', {
+      objects: objs.length,
+      topLabel: topNLabel,
+      accessible: accessible,
+      time: `${String(getViewTime().getHours()).padStart(2,'0')}h${String(getViewTime().getMinutes()).padStart(2,'0')}`,
+      mode: simTime ? skyFrameTargetsTranslate('targets.count.modeSimulation') : skyFrameTargetsTranslate('targets.count.modeLive'),
+      search: objectSearch ? skyFrameTargetsTranslate('targets.count.searchSuffix', { shown: objs.length, total: totalBeforeSearch }) : ''
+    });
   renderCatalogStatsPanel();
 
   const grid=document.getElementById('objects-grid');
-  if(!objs.length){grid.innerHTML=`<div class="no-results"><div style="font-size:40px">🔭</div>${objectSearch?`Aucun objet ne correspond à “${objectSearch.replace(/</g,'&lt;')}”.`:'Aucun objet pour ce filtre.'}</div>`;return;}
+  if(!objs.length){grid.innerHTML=`<div class="no-results"><div style="font-size:40px">🔭</div>${objectSearch?skyFrameTargetsTranslate('targets.empty.search', { query: objectSearch.replace(/</g,'&lt;') }):skyFrameTargetsTranslate('targets.empty.filter')}</div>`;return;}
 
   grid.innerHTML=objs.map(o=>{
     const color=TYPE_COLOR[o.type]||'#fff';
@@ -36,25 +49,25 @@ function renderTargets(){
     const rec=recFilter(o,mp.ill);
     let badge,badgeCls;
     if(o.cat==='Planet'){
-      if(o.alt<=0)       {badge=`Sous l'horizon (${Math.round(o.alt)}°)`;badgeCls='bad';}
-      else if(!o.acc)    {badge=`Az ${Math.round(o.az)}° — hors champ site`;badgeCls='warn';}
-      else               {badge=`✅ Alt ${Math.round(o.alt)}° · Az ${Math.round(o.az)}°`;badgeCls='ok';}
-    } else if(o.alt<=0){badge=`Sous l'horizon (${Math.round(o.alt)}°)`;badgeCls='bad';}
+      if(o.alt<=0)       {badge=skyFrameTargetsTranslate('targets.badge.belowHorizon', { alt: Math.round(o.alt) });badgeCls='bad';}
+      else if(!o.acc)    {badge=skyFrameTargetsTranslate('targets.badge.outOfSite', { az: Math.round(o.az) });badgeCls='warn';}
+      else               {badge=skyFrameTargetsTranslate('targets.badge.okPlanet', { alt: Math.round(o.alt), az: Math.round(o.az) });badgeCls='ok';}
+    } else if(o.alt<=0){badge=skyFrameTargetsTranslate('targets.badge.belowHorizon', { alt: Math.round(o.alt) });badgeCls='bad';}
     else if(!o.acc && o.alt>S.altMin){
       const cosBalcO=Math.abs(Math.cos(toR(o.az-S.azBord)));
       const effMaxO=cosBalcO<0.05?90:toD(Math.atan(S.kBord/cosBalcO));
-      if(o.alt>effMaxO){badge=`Obstacle sup.: ${Math.round(o.alt)}° > ${Math.round(effMaxO)}° à az${Math.round(o.az)}°`;badgeCls='warn';}
-      else{badge=`Az ${Math.round(o.az)}° — hors champ site`;badgeCls='warn';}
+      if(o.alt>effMaxO){badge=skyFrameTargetsTranslate('targets.badge.upperObstacle', { alt: Math.round(o.alt), max: Math.round(effMaxO), az: Math.round(o.az) });badgeCls='warn';}
+      else{badge=skyFrameTargetsTranslate('targets.badge.outOfSite', { az: Math.round(o.az) });badgeCls='warn';}
     }
-    else if(!o.shoot){badge=`Accessible — filtre manquant`;badgeCls='warn';}
-    else{badge=`✅ ${Math.round(o.alt)}° alt · Az ${Math.round(o.az)}°`;badgeCls='ok';}
+    else if(!o.shoot){badge=skyFrameTargetsTranslate('targets.badge.filterMissing');badgeCls='warn';}
+    else{badge=skyFrameTargetsTranslate('targets.badge.ok', { alt: Math.round(o.alt), az: Math.round(o.az) });badgeCls='ok';}
 
     const rt=getRating(o.id);
     const inPlanning=isInPlanning(o.id);
     return `<div class="obj-card ${o.type} ${(!o.acc||!o.shoot)?'inaccessible':''}"
       onclick="openModal('${o.id}')" style="border-left-color:${color}">
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <button class="night-btn" type="button" onclick="event.stopPropagation();addToPlannerById('${o.id}','cibles')" style="font-size:10px;padding:6px 10px;${inPlanning?'opacity:.65;border-color:#69f0ae;color:#69f0ae;':''}">${inPlanning?'✅ Déjà planifié':'➕ Planifier'}</button>
+        <button class="night-btn" type="button" onclick="event.stopPropagation();addToPlannerById('${o.id}','cibles')" style="font-size:10px;padding:6px 10px;${inPlanning?'opacity:.65;border-color:#69f0ae;color:#69f0ae;':''}">${inPlanning?skyFrameTargetsTranslate('planner.action.alreadyPlanned'):skyFrameTargetsTranslate('planner.action.plan')}</button>
       </div>
       <div class="obj-header">
         <div>
@@ -69,8 +82,8 @@ function renderTargets(){
         </div>
         <div>
           <div class="obj-alt-badge" style="color:${o.acc?color:'#555'}">${Math.round(o.alt)}°</div>
-          <div class="obj-alt-label">altitude</div>
-          ${o.cat!=='Planet'?`<div style="text-align:right;margin-top:4px;font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:700;line-height:1">${o.score}</div><div class="obj-alt-label">score</div>`:''}
+          <div class="obj-alt-label">${skyFrameTargetsTranslate('targets.card.altitude')}</div>
+          ${o.cat!=='Planet'?`<div style="text-align:right;margin-top:4px;font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:700;line-height:1">${o.score}</div><div class="obj-alt-label">${skyFrameTargetsTranslate('targets.card.score')}</div>`:''}
         </div>
       </div>
       <div class="obj-meta">
@@ -91,3 +104,7 @@ function setFilter(f,el){
   renderTargets();
   if(currentPage==='chart') drawChart();
 }
+
+document.addEventListener('skyframe:languagechange', function() {
+  if(currentPage==='targets') renderTargets();
+});
