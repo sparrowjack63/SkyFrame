@@ -44,3 +44,13 @@ const MONTHS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov
 const PLAN_STORAGE_KEY='skyframe_planning';
 const PLAN_TARGET_OVERHEAD_MIN=5;
 const PLAN_EXPOSURE_MIN=5;
+
+const I18N_DAYS={fr:['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat']};
+const I18N_MONTHS={fr:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']};
+const I18N_TYPE_LABEL={fr:{nebula:'Nébuleuse',galaxy:'Galaxie',cluster:'Amas ouvert',planetary:'Nébuleuse planétaire',snr:'Rémanent SN',planet:'Planète'},en:{nebula:'Nebula',galaxy:'Galaxy',cluster:'Open cluster',planetary:'Planetary nebula',snr:'SNR remnant',planet:'Planet'}};
+const I18N_FILTER_LABELS={fr:{all:'Tous',nebula:'🌹 Nébuleuses',galaxy:'🌀 Galaxies',cluster:'✨ Amas',planetary:'💛 Planét.',snr:'💥 SNR',sh2:'🔴 Sh2',planet:'🪐 Planètes',accessible:'✅ Accessibles',dualband:'Double bande',lightpollution:'Anti-pollution',spring:'🌱 Printemps',summer:'☀️ Été',autumn:'🍂 Automne',winter:'❄️ Hiver',stars1:'⭐ 1',stars2:'⭐⭐ 2',stars3:'⭐⭐⭐ 3',stars4:'⭐⭐⭐⭐ 4',stars5:'⭐⭐⭐⭐⭐ 5'},en:{all:'All',nebula:'🌹 Nebulae',galaxy:'🌀 Galaxies',cluster:'✨ Clusters',planetary:'💛 Planet.',snr:'💥 SNR',sh2:'🔴 Sh2',planet:'🪐 Planets',accessible:'✅ Visible',dualband:'Dual-band',lightpollution:'Light pollution',spring:'🌱 Spring',summer:'☀️ Summer',autumn:'🍂 Autumn',winter:'❄️ Winter',stars1:'⭐ 1',stars2:'⭐⭐ 2',stars3:'⭐⭐⭐ 3',stars4:'⭐⭐⭐⭐ 4',stars5:'⭐⭐⭐⭐⭐ 5'}};
+function currentLocale(){ return (typeof getCurrentLanguage==='function' ? getCurrentLanguage() : 'fr'); }
+function i18nDays(){ return I18N_DAYS[currentLocale()] || DAYS; }
+function i18nMonths(){ return I18N_MONTHS[currentLocale()] || MONTHS; }
+function getTypeLabel(type){ return (I18N_TYPE_LABEL[currentLocale()]||TYPE_LABEL)[type] || TYPE_LABEL[type] || type; }
+function getFilterLabel(key){ return (I18N_FILTER_LABELS[currentLocale()]||I18N_FILTER_LABELS.fr)[key] || key; }

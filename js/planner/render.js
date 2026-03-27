@@ -29,15 +29,15 @@ function renderPlanner(){
   let html=`<div class="planner-session" style="padding:12px 14px;margin-bottom:10px;">
     <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
       <div>
-        <div style="font-size:16px;font-weight:800;">🗓️ Planification de nuit</div>
+        <div style="font-size:16px;font-weight:800;">${t('planner.title')}</div>
         <div style="font-size:11px;color:var(--text2);margin-top:4px;">Fenêtre nuit utile ${fmtH(state.nb.sunset)} → ${fmtH(state.nb.sunrise)} · poses de ${PLAN_EXPOSURE_MIN} min · marge fixe −${PLAN_TARGET_OVERHEAD_MIN} min / cible</div>
       </div>
-      <div style="font-size:11px;color:${state.totalPlanned?(alerts.length?'#ffd54f':'#69f0ae'):'var(--text2)'};font-weight:700;">${state.totalPlanned?(alerts.length?`⚠️ ${alerts.length} alerte${alerts.length>1?'s':''}`:'✅ Nuit cohérente'):'Aucune cible planifiée'}</div>
+      <div style="font-size:11px;color:${state.totalPlanned?(alerts.length?'#ffd54f':'#69f0ae'):'var(--text2)'};font-weight:700;">${state.totalPlanned?(alerts.length?`⚠️ ${alerts.length} alerte${alerts.length>1?'s':''}`:'✅ Nuit cohérente'):t('planner.nonePlanned')}</div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px;">
       ${[['Cibles planifiées',state.totalPlanned],['Exploitables cette nuit',state.totalSchedulable],['Temps brut',formatDurationMinutes(state.totalRaw)],['Temps exploitable',formatDurationMinutes(state.totalUsable)],['Poses estimées',state.totalExposures],['Fin conseillée',formatPlanningTime(state.endAdvice)],['Lune',`${mp.icon} ${mp.ill}%`]].map(([k,v])=>`<div style="border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px 10px;background:rgba(255,255,255,.02);"><div style="font:700 10px var(--mono);letter-spacing:.06em;color:var(--text3);margin-bottom:4px;">${k}</div><div style="font-size:14px;font-weight:700;color:var(--text);">${v}</div></div>`).join('')}
     </div>
-    ${state.totalPlanned?`${alerts.length?`<div style="margin-top:12px;border:1px solid rgba(255,213,79,.25);background:rgba(255,213,79,.06);border-radius:10px;padding:10px 12px;"><div style="font:700 10px var(--mono);letter-spacing:.06em;color:#ffd54f;margin-bottom:6px;">VALIDATION GLOBALE</div><div style="font-size:11px;color:var(--text2);line-height:1.6;">${alerts.map(a=>`• ${a}`).join('<br>')}</div></div>`:''}`:`<div style="margin-top:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);border-radius:10px;padding:10px 12px;"><div style="font:700 10px var(--mono);letter-spacing:.06em;color:var(--text3);margin-bottom:6px;">ÉTAT VIDE</div><div style="font-size:11px;color:var(--text2);line-height:1.6;">La planification est vide pour l'instant. Ajoute tes premières cibles manuellement depuis les onglets Cibles ou Courbes.</div></div>`}
+    ${state.totalPlanned?`${alerts.length?`<div style="margin-top:12px;border:1px solid rgba(255,213,79,.25);background:rgba(255,213,79,.06);border-radius:10px;padding:10px 12px;"><div style="font:700 10px var(--mono);letter-spacing:.06em;color:#ffd54f;margin-bottom:6px;">VALIDATION GLOBALE</div><div style="font-size:11px;color:var(--text2);line-height:1.6;">${alerts.map(a=>`• ${a}`).join('<br>')}</div></div>`:''}`:`<div style="margin-top:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);border-radius:10px;padding:10px 12px;"><div style="font:700 10px var(--mono);letter-spacing:.06em;color:var(--text3);margin-bottom:6px;">${t('planner.emptyState')}</div><div style="font-size:11px;color:var(--text2);line-height:1.6;">${t('planner.emptyHelp')}</div></div>`}
   </div>`;
   html+=buildPlannerNightTimeline(state);
   const sortedItems=[
@@ -57,7 +57,7 @@ function renderPlanner(){
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <span class="chip" style="background:${statusColor}22;border-color:${statusColor};color:${statusColor};">${it.statusLabel}</span>
-          <button class="night-btn" type="button" onclick="removeFromPlannerById('${it.id}')" style="font-size:10px;padding:6px 10px;">🗑️ Retirer</button>
+          <button class="night-btn" type="button" onclick="removeFromPlannerById('${it.id}')" style="font-size:10px;padding:6px 10px;">${t('planner.remove')}</button>
         </div>
       </div>
       <div class="planner-body">
@@ -76,10 +76,10 @@ function renderPlanner(){
     </div>`;
   });
   html+=`<div class="planner-session" style="padding:10px 12px;">
-    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Rappels setup</div>
-    <div class="planner-row"><span class="planner-label">Champ</span><span class="planner-val">${f.w.toFixed(1)}° × ${f.h.toFixed(1)}°</span></div>
-    <div class="planner-row"><span class="planner-label">Pose de référence</span><span class="planner-val">${PLAN_EXPOSURE_MIN} min</span></div>
-    <div class="planner-row"><span class="planner-label">Overhead estimé / cible</span><span class="planner-val">${PLAN_TARGET_OVERHEAD_MIN} min</span></div>
+    <div style="font-size:9px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${t('planner.setupNotes')}</div>
+    <div class="planner-row"><span class="planner-label">${t('planner.field')}</span><span class="planner-val">${f.w.toFixed(1)}° × ${f.h.toFixed(1)}°</span></div>
+    <div class="planner-row"><span class="planner-label">${t('planner.referenceExposure')}</span><span class="planner-val">${PLAN_EXPOSURE_MIN} min</span></div>
+    <div class="planner-row"><span class="planner-label">${t('planner.overhead')}</span><span class="planner-val">${PLAN_TARGET_OVERHEAD_MIN} min</span></div>
   </div>`;
   wrap.innerHTML=html;
   wrap.querySelectorAll('[data-scroll-id]').forEach(el=>{
@@ -103,7 +103,7 @@ function exportPlanner(){
   a.download=`planification_skyframe_${date}.json`;
   a.click();
   URL.revokeObjectURL(u);
-  showToast(`📤 ${ids.length} cible${ids.length!==1?'s':''} exportée${ids.length!==1?'s':''}`);
+  showToast(`${t('planner.exportedPrefix')} ${ids.length} cible${ids.length!==1?'s':''} exportée${ids.length!==1?'s':''}`);
 }
 
 function importPlannerJSON(input){
