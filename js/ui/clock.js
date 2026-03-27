@@ -12,8 +12,7 @@ function updateClock(){
   const m=String(t.getMinutes()).padStart(2,'0');
   const s=String(t.getSeconds()).padStart(2,'0');
   document.getElementById('clock').textContent=`${h}:${m}:${s}`;
-  const days=i18nDays(), months=i18nMonths();
-  document.getElementById('clock-date').textContent=`${days[t.getDay()]} ${t.getDate()} ${months[t.getMonth()]} ${t.getFullYear()}`;
+  document.getElementById('clock-date').textContent=`${DAYS[t.getDay()]} ${t.getDate()} ${MONTHS[t.getMonth()]} ${t.getFullYear()}`;
   const j=jd(t);
   const lstD=lst(j,S.lon);
   const lh=Math.floor(lstD/15),lm=Math.floor((lstD/15-lh)*60);
@@ -24,7 +23,7 @@ function updateClock(){
   const imp=moonImpact(mp.ill);
   document.getElementById('moon-icon').textContent=mp.icon;
   document.getElementById('moon-phase').textContent=mp.name;
-  document.getElementById('moon-details').textContent=`${t('moon.illumination',{value:mp.ill})} · ${imp.txt}`;
+  document.getElementById('moon-details').textContent=`Illumination : ${mp.ill}% · ${imp.txt}`;
   document.getElementById('moon-chip').textContent=`${mp.icon} ${mp.ill}%`;
   document.getElementById('moon-chip').className=`chip ${imp.cls}`;
   document.getElementById('chip-moon').textContent=`${mp.icon} ${mp.ill}%`;
@@ -46,11 +45,11 @@ function updateDateNavUI(){
     const label = document.getElementById(id);
     if(!label) return;
     if(dateOffset === 0){
-      label.textContent = t('date.tonight');
+      label.textContent = 'Ce soir 📅';
       label.className = 'date-nav-label';
     } else {
       const d = getBaseDate();
-      const days=i18nDays(), months=i18nMonths(); label.textContent = `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} 📅`;
+      label.textContent = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} 📅`;
       label.className = 'date-nav-label forecast';
     }
   });
@@ -139,7 +138,7 @@ function updateSliderUI(){
   document.getElementById('slider-start-label').textContent=`☀️ ${fmtH(nb.sunset)}`;
   document.getElementById('slider-end-label').textContent=`☀️ ${fmtH(nb.sunrise)}`;
   document.getElementById('twilight-info').textContent=
-    `${t('chart.astroNight')} ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`;
+    `🌑 Nuit astro ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`;
   drawNightTimeline();
 
   // Quick-jump buttons removed: slider is now the primary night navigation control.
@@ -157,7 +156,7 @@ function setNow(){
   }
   simTime=null;
   document.getElementById('btn-now').classList.add('active-now');
-  document.getElementById('slider-label').textContent=t('time.live');
+  document.getElementById('slider-label').textContent='DIRECT';
   // Reset slider to current position in night
   syncSliderToNow();
   renderTargets();

@@ -138,21 +138,10 @@ function applySiteProfile(p){
   if(typeof renderTargets === 'function') renderTargets();
 }
 
-window.refreshI18nUI = function(){
-  document.querySelectorAll('.filter-btn').forEach(btn=>{ const key=btn.dataset.filter; if(key) btn.textContent=getFilterLabel(key); });
-  document.querySelectorAll('.mft-active').forEach(el=>{ el.textContent=getFilterLabel(currentFilter); });
-  const chartBtn=document.getElementById('chart-mobile-plan-btn'); if(chartBtn){ chartBtn.textContent=t(isInPlanning(chartBtn.dataset.objectId||'')?'planner.alreadyPlanned':'planner.add'); }
-  updateDateNavUI();
-  if(typeof renderTargets==='function' && currentPage==='targets') renderTargets();
-  if(typeof renderPlanner==='function' && currentPage==='planner') renderPlanner();
-  if(typeof drawChart==='function' && currentPage==='chart') drawChart();
-};
-
 window.addEventListener('load', async () => {
   syncObjectSearchUI();
   const st = localStorage_get_safe('astro_theme') || 'night';
   setTheme(st);
-  setLanguage(detectPreferredLanguage(), {persist:false});
   // Charger le profil site avant les calculs (écrase les valeurs par défaut)
   await loadSiteProfile();
   const hcStored = localStorage_get_safe('horizon_constraint');

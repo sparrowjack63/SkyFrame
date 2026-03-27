@@ -32,7 +32,7 @@ function saveSettings(){
   renderTargets();
   if(currentPage==='chart') drawChart();
   if(currentPage==='planner') renderPlanner();
-  showToast(t('settings.applied'));
+  showToast('✅ Paramètres appliqués !');
 }
 
 function applyCatalogTopN(){
@@ -43,13 +43,13 @@ function applyCatalogTopN(){
     updateCatalogTopNList();
     renderTargets();
     renderCatalogStatsPanel();
-    showToast(t('settings.topApplied',{value:v}));
+    showToast(`📊 Top ${v} appliqué`);
   }
 }
 
 function getGPS(){
-  if(!navigator.geolocation){showToast(t('settings.gpsUnavailable'));return;}
-  document.getElementById('gps-status').textContent=t('settings.locating');
+  if(!navigator.geolocation){showToast('❌ GPS non dispo');return;}
+  document.getElementById('gps-status').textContent='Localisation...';
   navigator.geolocation.getCurrentPosition(p=>{
     const la=p.coords.latitude.toFixed(4),lo=p.coords.longitude.toFixed(4);
     document.getElementById('s-lat').value=la;
@@ -57,7 +57,7 @@ function getGPS(){
     document.getElementById('gps-status').textContent=`${la}°N, ${lo}°E`;
     document.getElementById('chip-loc').textContent=`📍 GPS ✅`;
     showToast(`📡 ${la}°N, ${lo}°E`);
-  },()=>showToast(t('settings.gpsError')));
+  },()=>showToast('❌ Erreur GPS'));
 }
 
 function tog(k,el){

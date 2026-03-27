@@ -1351,4 +1351,3 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:250;background:var(--bg);bord
   border-radius: 12px;
   box-shadow: 0 0 0 1px rgba(255,255,255,.06);
 }
-.lang-switcher{display:flex;gap:6px;align-items:center;margin-right:10px}.lang-btn{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;padding:6px 10px;font:700 11px var(--mono);cursor:pointer}.lang-btn.active{color:var(--text);border-color:var(--accent);box-shadow:0 0 0 1px rgba(79,195,247,.2) inset}.mobile-lang-switcher{display:none;justify-content:center;gap:8px;padding:8px 0 2px}@media (max-width:768px){.header-right>.lang-switcher{display:none}.mobile-lang-switcher{display:flex}}
