@@ -1,0 +1,33 @@
+{
+  "name": "Mon site - Paris (exemple)",
+  "site": {
+    "lat": 48.8566,
+    "lon": 2.3522
+  },
+  "instrument": {
+    "focal": 450,
+    "sensor": "apsc"
+  },
+  "horizon": {
+    "enabled": false,
+    "azCenter": 90,
+    "azMin": 0,
+    "azMax": 360,
+    "altMin": 20,
+    "altMax": 90,
+    "azAltMaxRef": 90,
+    "azBord": 0,
+    "kBord": 0,
+    "azBordEst": 90,
+    "kBordEst": 0
+  },
+  "lighting": {
+    "mode": "none",
+    "offTime": "22:30",
+    "onTime": "06:00",
+    "label": "Éclairage public"
+  },
+  "filters": {
+    "available": ["neutral", "lightpollution", "dualband"]
+  }
+}

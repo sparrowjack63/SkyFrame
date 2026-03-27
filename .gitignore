@@ -1,0 +1,11 @@
+# Netlify local state
+.netlify/
+
+# Local/private site profiles
+profiles/default.json
+profiles/*.local.json
+
+# Internal assistant/local context
+.claude/
+CLAUDE.md
+CALIBRATION.md
