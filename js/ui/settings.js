@@ -1,5 +1,20 @@
 let currentPage = 'targets';
 
+function formatCoord(value, positiveLabel, negativeLabel) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '—';
+  const direction = num < 0 ? negativeLabel : positiveLabel;
+  return `${Math.abs(num).toFixed(3)}°${direction}`;
+}
+
+function formatSiteChip(lat) {
+  return `📍 ${formatCoord(lat, 'N', 'S')}`;
+}
+
+function formatGpsPair(lat, lon) {
+  return `${formatCoord(lat, 'N', 'S')}, ${formatCoord(lon, 'E', 'W')}`;
+}
+
 // js/ui/settings.js — Paramètres, navigation, toasts
 
 function saveSettings(){
@@ -26,7 +41,7 @@ function saveSettings(){
   if(elOff) S.lightingOffTime=elOff.value||S.lightingOffTime;
   const elOn=document.getElementById('s-lighting-on');
   if(elOn) S.lightingOnTime=elOn.value||S.lightingOnTime;
-  document.getElementById('chip-loc').textContent=`📍 ${S.lat.toFixed(3)}°N`;
+  document.getElementById('chip-loc').textContent = formatSiteChip(S.lat);
   nightBounds=null; nightBoundsDate=null;
   chartDrawn=false;
   renderTargets();
@@ -51,12 +66,13 @@ function getGPS(){
   if(!navigator.geolocation){showToast('❌ ' + SkyFrameI18n.translate('settings.toast.gpsUnavailable'));return;}
   document.getElementById('gps-status').textContent=SkyFrameI18n.translate('settings.location.gps.locating');
   navigator.geolocation.getCurrentPosition(p=>{
-    const la=p.coords.latitude.toFixed(4),lo=p.coords.longitude.toFixed(4);
+    const lat=p.coords.latitude, lon=p.coords.longitude;
+    const la=lat.toFixed(4), lo=lon.toFixed(4);
     document.getElementById('s-lat').value=la;
     document.getElementById('s-lon').value=lo;
-    document.getElementById('gps-status').textContent=`${la}°N, ${lo}°E`;
-    document.getElementById('chip-loc').textContent=`📍 GPS ✅`;
-    showToast('📡 ' + SkyFrameI18n.translate('settings.toast.gpsCoords', { lat: la, lon: lo }));
+    document.getElementById('gps-status').textContent = formatGpsPair(lat, lon);
+    document.getElementById('chip-loc').textContent = formatSiteChip(lat);
+    showToast('📡 ' + SkyFrameI18n.translate('settings.toast.gpsCoords', { coords: formatGpsPair(lat, lon) }));
   },()=>showToast('❌ ' + SkyFrameI18n.translate('settings.toast.gpsError')));
 }
 
@@ -243,7 +259,7 @@ function _selectSiteResult(idx) {
   S.lat = lat;
   S.lon = lon;
   nightBounds = null; nightBoundsDate = null;
-  document.getElementById('chip-loc').textContent = '📍 ' + lat.toFixed(3) + '°N';
+  document.getElementById('chip-loc').textContent = formatSiteChip(lat);
   chartDrawn = false;
   if (typeof renderTargets === 'function') renderTargets();
   if (currentPage === 'chart' && typeof drawChart === 'function') drawChart();

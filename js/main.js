@@ -133,6 +133,12 @@ function applySiteProfile(p){
     if(el) el.classList.toggle('on', !!TOGSTATES[k]);
   });
   if(typeof onLightingModeChange === 'function') onLightingModeChange();
+  const chipLoc = document.getElementById('chip-loc');
+  if (chipLoc) {
+    chipLoc.textContent = typeof formatSiteChip === 'function'
+      ? formatSiteChip(S.lat)
+      : `📍 ${S.lat.toFixed(3)}°N`;
+  }
   // Recalculer
   nightBounds = null; nightBoundsDate = null;
   if(typeof renderTargets === 'function') renderTargets();
