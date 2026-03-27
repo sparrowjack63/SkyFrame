@@ -9,6 +9,18 @@ function hideMobileActionBar(){
   if(bar) bar.style.display='none';
 }
 
+function getChartHoverTypeLabel(type){
+  const labels={
+    nebula:'chart.type.nebula',
+    galaxy:'chart.type.galaxy',
+    cluster:'chart.type.cluster',
+    planetary:'chart.type.planetary',
+    snr:'chart.type.snr',
+    planet:'chart.type.planet'
+  };
+  return labels[type] ? skyFrameChartHoverTranslate(labels[type]) : (type||'—');
+}
+
 function updateMobileActionBar(o){
   if(window.innerWidth>768){hideMobileActionBar();return;}
   const bar=document.getElementById('chart-mobile-action-bar');
@@ -135,13 +147,14 @@ function onChartHover(e, canvas){
 
       const rt=getRating(o.id);
       const astroBinUrl=getAstroBinSearchUrl(o);
+      const typeLabel=getChartHoverTypeLabel(o.type);
       const starsHtml=rt.stars
         ? `<span style="letter-spacing:1px;">${'★'.repeat(rt.stars)}<span style="opacity:.25">${'★'.repeat(5-rt.stars)}</span></span> <span style="font-size:9px;opacity:.8">${rt.tag}</span>`
         : '';
       const compHtml=rt.comp?`<div style="color:var(--accent2);margin-top:2px;font-size:9px;">🔗 ${rt.comp}</div>`:'';
       const reasonHtml=rt.reason&&rt.stars>=3?`<div style="opacity:.65;font-style:italic;margin-top:2px;font-size:9px;line-height:1.3">${rt.reason}</div>`:'';
       const astroBinHtml=astroBinUrl
-        ? `<div style="margin-top:6px;font-size:10px;"><a href="${astroBinUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;border-bottom:1px dashed rgba(79,195,247,.45);padding-bottom:1px;pointer-events:auto;">🔗 Voir des images AstroBin</a></div>`
+        ? `<div style="margin-top:6px;font-size:10px;"><a href="${astroBinUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--accent);text-decoration:none;border-bottom:1px dashed rgba(79,195,247,.45);padding-bottom:1px;pointer-events:auto;">🔗 ${skyFrameChartHoverTranslate('chart.tooltip.astrobinImages')}</a></div>`
         : '';
       const tipIsMobile=window.innerWidth<=768;
       const tipInPlan=isInPlanning(o.id);
@@ -155,7 +168,7 @@ function onChartHover(e, canvas){
         `<div style="color:${co.color};font-weight:700;margin-bottom:3px">${o.name}</div>`+
         (starsHtml?`<div style="color:#ffd54f;font-size:13px;margin-bottom:3px">${starsHtml}</div>`:'')+
         reasonHtml+compHtml+
-        `<div style="margin-top:4px;opacity:.7;font-size:9px">${o.type} · ${o.filter||''}</div>`+
+        `<div style="margin-top:4px;opacity:.7;font-size:9px">${typeLabel} · ${o.filter||''}</div>`+
         `<div style="opacity:.7;font-size:9px">${skyFrameChartHoverTranslate('chart.tooltip.altAz', { alt: Math.round(closestPt.alt), az: Math.round(closestPt.az) })}</div>`+
         `<div style="opacity:.7;font-size:9px">${skyFrameChartHoverTranslate('chart.tooltip.window', { value: winStr })}</div>`+
         (optStr!=='—'

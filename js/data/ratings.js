@@ -167,7 +167,43 @@ const RATINGS={
 };
 
 // Accesseurs et helpers de notation
-function getRating(id){return(CUSTOM_META[id]&&CUSTOM_META[id].rating)||RATINGS[id]||{stars:0,tag:"—",comp:null,reason:"Non évalué"};}
+function skyFrameRatingTranslate(key, fallback, params){
+  return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : fallback;
+}
+
+function localizeRatingTag(tag){
+  const normalized=(tag||'').trim();
+  const map={
+    'IDÉAL':'rating.tag.ideal',
+    'BON':'rating.tag.good',
+    'MOYEN':'rating.tag.average',
+    'PETIT':'rating.tag.small',
+    'MINUSCULE':'rating.tag.tiny',
+    '—':'rating.tag.none'
+  };
+  return map[normalized]
+    ? skyFrameRatingTranslate(map[normalized], normalized)
+    : normalized;
+}
+
+function localizeRatingReason(reason){
+  if(!reason) return reason;
+  const map={
+    'Non évalué':'rating.reason.unrated'
+  };
+  return map[reason]
+    ? skyFrameRatingTranslate(map[reason], reason)
+    : reason;
+}
+
+function getRating(id){
+  const base=(CUSTOM_META[id]&&CUSTOM_META[id].rating)||RATINGS[id]||{stars:0,tag:'—',comp:null,reason:'Non évalué'};
+  return {
+    ...base,
+    tag:localizeRatingTag(base.tag),
+    reason:localizeRatingReason(base.reason)
+  };
+}
 
 function renderStars(n){
   if(!n) return '<span style="color:var(--text3);font-size:10px">—</span>';
