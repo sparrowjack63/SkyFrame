@@ -32,7 +32,7 @@ function saveSettings(){
   renderTargets();
   if(currentPage==='chart') drawChart();
   if(currentPage==='planner') renderPlanner();
-  showToast('✅ Paramètres appliqués !');
+  showToast(t('settings.applied'));
 }
 
 function applyCatalogTopN(){

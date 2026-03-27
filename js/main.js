@@ -138,10 +138,32 @@ function applySiteProfile(p){
   if(typeof renderTargets === 'function') renderTargets();
 }
 
+window.refreshI18nUI = function(){
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    const key = btn.dataset.filter;
+    if (key) btn.textContent = getFilterLabel(key);
+  });
+  document.querySelectorAll('.mft-active').forEach(el => { el.textContent = getFilterLabel(currentFilter); });
+  document.querySelectorAll('.search-label').forEach(el => { el.textContent = t('common.searchLabel'); });
+  const targetsHint = document.querySelector('#targets-search-bar .search-hint');
+  if (targetsHint) targetsHint.textContent = t('common.searchHintTargets');
+  const chartHint = document.querySelector('#chart-search-bar .search-hint');
+  if (chartHint) chartHint.textContent = t('common.searchHintChart');
+  document.documentElement.setAttribute('lang', getCurrentLanguage());
+  updateDateNavUI();
+  if (simTime === null) {
+    const sliderLabel = document.getElementById('slider-label');
+    if (sliderLabel) sliderLabel.textContent = t('common.live');
+  }
+  if (typeof renderTargets === 'function' && currentPage === 'targets') renderTargets();
+  if (typeof drawChart === 'function' && currentPage === 'chart') drawChart();
+};
+
 window.addEventListener('load', async () => {
   syncObjectSearchUI();
   const st = localStorage_get_safe('astro_theme') || 'night';
   setTheme(st);
+  setLanguage(detectPreferredLanguage(), {persist:false});
   // Charger le profil site avant les calculs (écrase les valeurs par défaut)
   await loadSiteProfile();
   const hcStored = localStorage_get_safe('horizon_constraint');

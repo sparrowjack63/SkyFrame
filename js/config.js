@@ -44,3 +44,21 @@ const MONTHS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov
 const PLAN_STORAGE_KEY='skyframe_planning';
 const PLAN_TARGET_OVERHEAD_MIN=5;
 const PLAN_EXPOSURE_MIN=5;
+
+function currentLocale(){ return (typeof getCurrentLanguage==='function' ? getCurrentLanguage() : 'fr'); }
+function getClockDays(){
+  return currentLocale()==='en'
+    ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+    : ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+}
+function getClockMonths(){
+  return currentLocale()==='en'
+    ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    : ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+}
+function getFilterLabel(key){
+  const source = currentLocale()==='en'
+    ? {all:'All',nebula:'🌹 Nebulae',galaxy:'🌀 Galaxies',cluster:'✨ Clusters',planetary:'💛 Planet.',snr:'💥 SNR',sh2:'🔴 Sh2',planet:'🪐 Planets',accessible:'✅ Visible',dualband:'Dual-band',lightpollution:'Light pollution',spring:'🌱 Spring',summer:'☀️ Summer',autumn:'🍂 Autumn',winter:'❄️ Winter',stars1:'⭐ 1',stars2:'⭐⭐ 2',stars3:'⭐⭐⭐ 3',stars4:'⭐⭐⭐⭐ 4',stars5:'⭐⭐⭐⭐⭐ 5'}
+    : {all:'Tous',nebula:'🌹 Nébuleuses',galaxy:'🌀 Galaxies',cluster:'✨ Amas',planetary:'💛 Planét.',snr:'💥 SNR',sh2:'🔴 Sh2',planet:'🪐 Planètes',accessible:'✅ Accessibles',dualband:'Double bande',lightpollution:'Anti-pollution',spring:'🌱 Printemps',summer:'☀️ Été',autumn:'🍂 Automne',winter:'❄️ Hiver',stars1:'⭐ 1',stars2:'⭐⭐ 2',stars3:'⭐⭐⭐ 3',stars4:'⭐⭐⭐⭐ 4',stars5:'⭐⭐⭐⭐⭐ 5'};
+  return source[key] || key;
+}
