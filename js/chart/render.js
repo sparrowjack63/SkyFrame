@@ -288,7 +288,7 @@ function drawChart(){
       ctx.save();
       ctx.fillStyle='rgba(80,100,200,.35)';
       ctx.font='bold 8px "Space Mono"'; ctx.textAlign='center';
-      ctx.fillText('NUIT NOIRE', xCenter, P.t+cH-6);
+      ctx.fillText(skyFrameChartTranslate('chart.nightLabel'), xCenter, P.t+cH-6);
       ctx.restore();
     }
   }
@@ -309,7 +309,7 @@ function drawChart(){
     const xMid = (xLo + xLoE) / 2;
     ctx.fillStyle = 'rgba(255,180,80,0.90)';
     ctx.font = 'bold 10px "Space Mono"'; ctx.textAlign = 'center';
-    ctx.fillText('💡 ' + (S.lightingLabel||'Éclairage'), xMid, P.t+16);
+    ctx.fillText('💡 ' + (S.lightingLabel||skyFrameChartTranslate('chart.lightingLabel')), xMid, P.t+16);
     ctx.restore();
   } else {
     // night_off — bande verte entre offTime et onTime
@@ -333,7 +333,7 @@ function drawChart(){
       if(xMid > P.l+10 && xMid < P.l+cW-10){
         ctx.fillStyle = 'rgba(130,230,130,0.95)';
         ctx.font = 'bold 10px "Space Mono"'; ctx.textAlign = 'center';
-        ctx.fillText('🌃 ' + (S.lightingLabel||'Lumières éteintes'), xMid, P.t+16);
+        ctx.fillText('🌃 ' + (S.lightingLabel||skyFrameChartTranslate('chart.lightsOffLabel')), xMid, P.t+16);
       }
       ctx.restore();
     }
@@ -708,7 +708,7 @@ function drawNightTimeline(){
     const keyTimes = [
       {h:nb.sunset,    lbl:fmtH(nb.sunset),    dark:false},
       {h:nb.astroDusk, lbl:'🌑 '+fmtH(nb.astroDusk), dark:true},
-      {h:(nb.astroDusk+nb.astroDawn)/2, lbl:'minuit astro', dark:true, small:true},
+      {h:(nb.astroDusk+nb.astroDawn)/2, lbl:skyFrameChartTranslate('chart.midnightLabel'), dark:true, small:true},
       {h:nb.astroDawn, lbl:fmtH(nb.astroDawn)+' 🌑', dark:true},
       {h:nb.sunrise,   lbl:fmtH(nb.sunrise),   dark:false},
     ];
@@ -741,10 +741,10 @@ function drawNightTimeline(){
   const phases = document.getElementById('ntl-phases');
   if(phases){
     const items = [
-      {color:'#1e3060', lbl:`Crépuscule civil  ${fmtH(nb.sunset)}→${fmtH(nb.civilDusk)}`},
-      {color:'#142050', lbl:`Crépuscule nautique  ${fmtH(nb.civilDusk)}→${fmtH(nb.nautDusk)}`},
-      {color:'#0a0e22', lbl:`Crépuscule astro  ${fmtH(nb.nautDusk)}→${fmtH(nb.astroDusk)}`},
-      {color:'#ffd54f', lbl:`✨ Nuit noire  ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`, bold:true},
+      {color:'#1e3060', lbl:`${skyFrameChartTranslate('chart.twilight.civil')}  ${fmtH(nb.sunset)}→${fmtH(nb.civilDusk)}`},
+      {color:'#142050', lbl:`${skyFrameChartTranslate('chart.twilight.nautical')}  ${fmtH(nb.civilDusk)}→${fmtH(nb.nautDusk)}`},
+      {color:'#0a0e22', lbl:`${skyFrameChartTranslate('chart.twilight.astronomical')}  ${fmtH(nb.nautDusk)}→${fmtH(nb.astroDusk)}`},
+      {color:'#ffd54f', lbl:`✨ ${skyFrameChartTranslate('chart.nightLabel')}  ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`, bold:true},
     ];
     phases.innerHTML = items.map(it=>`
       <span class="ntl-phase">
@@ -790,6 +790,6 @@ function drawNightTimeline(){
   if(darkRange){
     const darkH = nb.astroDawn - nb.astroDusk;
     const dh = Math.floor(darkH), dm = Math.round((darkH%1)*60);
-    darkRange.textContent = `${dh}h${String(dm).padStart(2,'0')} de nuit noire`;
+    darkRange.textContent = `${dh}h${String(dm).padStart(2,'0')} ${skyFrameChartTranslate('chart.darkNightDuration')}`;
   }
 }

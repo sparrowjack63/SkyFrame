@@ -83,6 +83,9 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('fr', {
   'planner.toast.objectNotFound': 'Objet introuvable',
   'planner.toast.alreadyInPlanner': '{{name}} déjà dans la planification',
   'planner.toast.addedVia': '{{name}} ajouté via {{source}}',
+  'planner.source.app': 'l’application',
+  'planner.source.courbes': 'Courbes',
+  'planner.source.cibles': 'Cibles',
   'planner.toast.removed': '{{name}} retiré de la planification',
   'planner.toast.exported': '{{count}} cible{{suffix}} exportée{{suffixE}}',
   'planner.toast.invalidJson': 'Fichier JSON invalide',
@@ -422,5 +425,14 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('fr', {
   'modal.memberPluralSuffix': 's',
   'modal.neighbor': 'voisin',
   'modal.neighborPluralSuffix': 's',
-  'modal.visibleMonths': 'Visible'
+  'modal.visibleMonths': 'Visible',
+  'chart.nightLabel': 'NUIT NOIRE',
+  'chart.lightingLabel': 'Éclairage',
+  'chart.lightsOffLabel': 'Lumières éteintes',
+  'chart.twilight.civil': 'Crépuscule civil',
+  'chart.twilight.nautical': 'Crépuscule nautique',
+  'chart.twilight.astronomical': 'Crépuscule astro',
+  'chart.midnightLabel': 'minuit astro',
+  'chart.darkNightDuration': 'de nuit noire',
+  'chart.nightWindowLabel': 'Nuit astro'
 });

@@ -138,7 +138,7 @@ function updateSliderUI(){
   document.getElementById('slider-start-label').textContent=`☀️ ${fmtH(nb.sunset)}`;
   document.getElementById('slider-end-label').textContent=`☀️ ${fmtH(nb.sunrise)}`;
   document.getElementById('twilight-info').textContent=
-    `🌑 Nuit astro ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`;
+    `🌑 ${window.SkyFrameI18n ? window.SkyFrameI18n.translate('chart.nightWindowLabel') : 'Nuit astro'} ${fmtH(nb.astroDusk)}→${fmtH(nb.astroDawn)}`;
   drawNightTimeline();
 
   // Quick-jump buttons removed: slider is now the primary night navigation control.

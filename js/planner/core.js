@@ -28,7 +28,8 @@ function addToPlannerById(id, source='app'){
   if(currentPage==='planner') renderPlanner();
   if(currentPage==='chart') drawChart();
   if(currentPage==='targets') renderTargets();
-  showToast(`🗓️ ${skyFramePlannerTranslate('planner.toast.addedVia', { name: formatDisplayName(o), source: source })}`);
+  const localizedSource = skyFramePlannerTranslate(`planner.source.${source}`);
+  showToast(`🗓️ ${skyFramePlannerTranslate('planner.toast.addedVia', { name: formatDisplayName(o), source: localizedSource })}`);
 }
 
 function removeFromPlannerById(id){

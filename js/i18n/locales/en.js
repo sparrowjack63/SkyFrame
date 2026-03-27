@@ -83,6 +83,9 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('en', {
   'planner.toast.objectNotFound': 'Object not found',
   'planner.toast.alreadyInPlanner': '{{name}} is already in the planner',
   'planner.toast.addedVia': '{{name}} added via {{source}}',
+  'planner.source.app': 'the app',
+  'planner.source.courbes': 'Charts',
+  'planner.source.cibles': 'Targets',
   'planner.toast.removed': '{{name}} removed from the planner',
   'planner.toast.exported': '{{count}} target{{suffix}} exported',
   'planner.toast.invalidJson': 'Invalid JSON file',
@@ -422,5 +425,14 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('en', {
   'modal.memberPluralSuffix': 's',
   'modal.neighbor': 'neighbor',
   'modal.neighborPluralSuffix': 's',
-  'modal.visibleMonths': 'Visible'
+  'modal.visibleMonths': 'Visible',
+  'chart.nightLabel': 'DARK SKY',
+  'chart.lightingLabel': 'Lighting',
+  'chart.lightsOffLabel': 'Lights off',
+  'chart.twilight.civil': 'Civil twilight',
+  'chart.twilight.nautical': 'Nautical twilight',
+  'chart.twilight.astronomical': 'Astro twilight',
+  'chart.midnightLabel': 'astro midnight',
+  'chart.darkNightDuration': 'of dark sky',
+  'chart.nightWindowLabel': 'Astro night'
 });
