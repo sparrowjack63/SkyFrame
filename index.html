@@ -272,183 +272,181 @@
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="settings-section">
-        <div class="settings-title">📂 Profil du site</div>
+        <div class="settings-title" data-i18n="settings.section.siteProfile">📂 Profil du site</div>
         <div class="settings-card">
           <div class="settings-row">
             <div>
-              <div class="settings-label">Charger un profil</div>
-              <div class="settings-sub">Importer un fichier .json de configuration de site</div>
+              <div class="settings-label" data-i18n="settings.profile.load.label">Charger un profil</div>
+              <div class="settings-sub" data-i18n="settings.profile.load.sub">Importer un fichier .json de configuration de site</div>
             </div>
             <label class="time-btn" style="cursor:pointer">
-              📥 Charger
+              📥 <span data-i18n="settings.profile.load.button">Charger</span>
               <input type="file" accept=".json" style="display:none" onchange="importSiteProfile(this)">
             </label>
           </div>
           <div class="settings-row">
             <div>
-              <div class="settings-label">Sauvegarder le profil</div>
-              <div class="settings-sub">Exporter les paramètres actuels en .json</div>
+              <div class="settings-label" data-i18n="settings.profile.save.label">Sauvegarder le profil</div>
+              <div class="settings-sub" data-i18n="settings.profile.save.sub">Exporter les paramètres actuels en .json</div>
             </div>
-            <button class="time-btn" onclick="exportSiteProfile()">📤 Sauvegarder</button>
+            <button class="time-btn" onclick="exportSiteProfile()">📤 <span data-i18n="settings.profile.save.button">Sauvegarder</span></button>
           </div>
           <div class="settings-row">
             <div>
-              <div class="settings-label">Géolocaliser</div>
-              <div class="settings-sub">Détecter automatiquement votre position GPS</div>
+              <div class="settings-label" data-i18n="settings.profile.geolocate.label">Géolocaliser</div>
+              <div class="settings-sub" data-i18n="settings.profile.geolocate.sub">Détecter automatiquement votre position GPS</div>
             </div>
-            <button class="time-btn" onclick="geolocateSite()">📍 Localiser</button>
+            <button class="time-btn" onclick="geolocateSite()">📍 <span data-i18n="settings.profile.geolocate.button">Localiser</span></button>
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">📍 Localisation</div>
+        <div class="settings-title" data-i18n="settings.section.location">📍 Localisation</div>
         <div class="settings-card">
           <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:6px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div><div class="settings-label">Rechercher un lieu</div><div class="settings-sub">Met à jour le nom du site + les coordonnées GPS via OpenStreetMap</div></div>
+              <div><div class="settings-label" data-i18n="settings.location.search.label">Rechercher un lieu</div><div class="settings-sub" data-i18n="settings.location.search.sub">Met à jour le nom du site + les coordonnées GPS via OpenStreetMap</div></div>
             </div>
             <div style="position:relative;">
-              <input class="settings-input site-search-field" id="site-search-input" type="text" placeholder="Rechercher une ville ou un lieu..." autocomplete="off" oninput="onSiteSearchInput(this.value)" style="width:100%;box-sizing:border-box;text-align:left;">
+              <input class="settings-input site-search-field" id="site-search-input" type="text" placeholder="Rechercher une ville ou un lieu..." data-i18n-placeholder="settings.location.search.placeholder" autocomplete="off" oninput="onSiteSearchInput(this.value)" style="width:100%;box-sizing:border-box;text-align:left;">
               <div id="site-search-results" class="site-search-results" style="display:none;"></div>
             </div>
-            <div style="margin-top:4px;font-size:11px;color:var(--text3);line-height:1.5;border-left:2px solid rgba(79,195,247,.35);padding-left:10px;">
-              <b style="color:var(--text)">Important :</b> la recherche de lieu change seulement le <b>nom</b> et les <b>coordonnées</b>.<br>
-              Elle ne remplit pas automatiquement les paramètres d'<b>horizon</b>, de <b>balcon/obstacles</b> ni d'<b>éclairage local</b>.<br>
-              Pour retrouver un site complet calibré, utilise <b>📥 Charger</b> avec un profil JSON.
+            <div style="margin-top:4px;font-size:11px;color:var(--text3);line-height:1.5;border-left:2px solid rgba(79,195,247,.35);padding-left:10px;" data-i18n="settings.location.search.note">
+              Important : la recherche de lieu change seulement le nom et les coordonnées. Elle ne remplit pas automatiquement l'horizon, les obstacles de balcon ni l'éclairage local. Pour retrouver un site complet calibré, utilise 📥 Charger avec un profil JSON.
             </div>
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Nom du site</div><div class="settings-sub">Ex : Mon observatoire, Balcon Paris</div></div>
-            <input class="settings-input settings-input-md" id="s-site-name" type="text" placeholder="Mon site">
+            <div><div class="settings-label" data-i18n="settings.location.siteName.label">Nom du site</div><div class="settings-sub" data-i18n="settings.location.siteName.sub">Ex : Mon observatoire, Balcon Paris</div></div>
+            <input class="settings-input settings-input-md" id="s-site-name" type="text" placeholder="Mon site" data-i18n-placeholder="settings.location.siteName.placeholder">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Latitude</div><div class="settings-sub">degrés N</div></div>
+            <div><div class="settings-label" data-i18n="settings.location.latitude.label">Latitude</div><div class="settings-sub" data-i18n="settings.location.latitude.sub">degrés N</div></div>
             <input class="settings-input" id="s-lat" type="number" step="0.001" value="48.8566">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Longitude</div><div class="settings-sub">degrés E</div></div>
+            <div><div class="settings-label" data-i18n="settings.location.longitude.label">Longitude</div><div class="settings-sub" data-i18n="settings.location.longitude.sub">degrés E</div></div>
             <input class="settings-input" id="s-lon" type="number" step="0.001" value="2.3522">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">GPS auto</div><div class="settings-sub" id="gps-status">Non détecté</div></div>
-            <button class="gps-btn" onclick="getGPS()">📡 GPS</button>
+            <div><div class="settings-label" data-i18n="settings.location.gps.label">GPS auto</div><div class="settings-sub" id="gps-status" data-i18n="settings.location.gps.undetected">Non détecté</div></div>
+            <button class="gps-btn" onclick="getGPS()">📡 <span data-i18n="settings.location.gps.button">GPS</span></button>
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🔭 Optique</div>
+        <div class="settings-title" data-i18n="settings.section.optics">🔭 Optique</div>
         <div class="settings-card">
           <div class="settings-row">
-            <div><div class="settings-label">Focale (mm)</div><div class="settings-sub">ex: 450 mm</div></div>
+            <div><div class="settings-label" data-i18n="settings.optics.focal.label">Focale (mm)</div><div class="settings-sub" data-i18n="settings.optics.focal.sub">ex: 450 mm</div></div>
             <input class="settings-input" id="s-focal" type="number" value="450">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Capteur</div><div class="settings-sub">ex: APS-C</div></div>
+            <div><div class="settings-label" data-i18n="settings.optics.sensor.label">Capteur</div><div class="settings-sub" data-i18n="settings.optics.sensor.sub">ex: APS-C</div></div>
             <select class="settings-select" id="s-sensor">
               <option value="apsc">APS-C (23.5×15.7)</option>
               <option value="mft">MFT (17.3×13.0)</option>
-              <option value="ff">Plein format (36×24)</option>
+              <option value="ff" data-i18n="settings.optics.sensor.fullFrame">Plein format (36×24)</option>
             </select>
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🧭 Contrainte d'horizon</div>
+        <div class="settings-title" data-i18n="settings.section.horizon">🧭 Contrainte d'horizon</div>
         <div class="settings-card">
           <div class="settings-row">
             <div>
-              <div class="settings-label">Contrainte d'horizon active</div>
-              <div class="settings-sub">Activez si un obstacle limite la hauteur max visible</div>
-              <div class="settings-sub" style="color:var(--accent2);margin-top:2px">Avec contrainte : balcon sous un étage, toit, mur, arbre &nbsp;|&nbsp; Sans contrainte : jardin ouvert, terrasse, observatoire</div>
+              <div class="settings-label" data-i18n="settings.horizon.enabled.label">Contrainte d'horizon active</div>
+              <div class="settings-sub" data-i18n="settings.horizon.enabled.sub">Activez si un obstacle limite la hauteur max visible</div>
+              <div class="settings-sub" style="color:var(--accent2);margin-top:2px" data-i18n="settings.horizon.enabled.hint">Avec contrainte : balcon sous un étage, toit, mur, arbre &nbsp;|&nbsp; Sans contrainte : jardin ouvert, terrasse, observatoire</div>
             </div>
             <div class="toggle on" id="tog-horizon-constraint" onclick="tog('horizon_constraint',this)"></div>
           </div>
           <div class="settings-row">
             <div>
-              <div class="settings-label">Orientation principale (°)</div>
-              <div class="settings-sub">Pointer la boussole vers le centre de votre champ dégagé</div>
+              <div class="settings-label" data-i18n="settings.horizon.orientation.label">Orientation principale (°)</div>
+              <div class="settings-sub" data-i18n="settings.horizon.orientation.sub">Pointer la boussole vers le centre de votre champ dégagé</div>
               <div class="settings-sub" style="color:var(--accent2)">N=0° · E=90° · S=180° · O=270°</div>
             </div>
             <input class="settings-input" id="s-az-center" type="number" value="90">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Azimut min (°)</div><div class="settings-sub">Bord gauche visible</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.azMin.label">Azimut min (°)</div><div class="settings-sub" data-i18n="settings.horizon.azMin.sub">Bord gauche visible</div></div>
             <input class="settings-input" id="s-az-min" type="number" value="0">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Azimut max (°)</div><div class="settings-sub">Bord droit visible</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.azMax.label">Azimut max (°)</div><div class="settings-sub" data-i18n="settings.horizon.azMax.sub">Bord droit visible</div></div>
             <input class="settings-input" id="s-az-max" type="number" value="360">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Hauteur min (°)</div><div class="settings-sub">Horizon/bâtiments</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.altMin.label">Hauteur min (°)</div><div class="settings-sub" data-i18n="settings.horizon.altMin.sub">Horizon/bâtiments</div></div>
             <input class="settings-input" id="s-alt-min" type="number" value="20">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Hauteur max (°)</div><div class="settings-sub">Obstacle supérieur à cet azimut</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.altMax.label">Hauteur max (°)</div><div class="settings-sub" data-i18n="settings.horizon.altMax.sub">Obstacle supérieur à cet azimut</div></div>
             <input class="settings-input" id="s-alt-max" type="number" value="90">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Az référence (°)</div><div class="settings-sub">Az de l'objet bloqué</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.azRef.label">Az référence (°)</div><div class="settings-sub" data-i18n="settings.horizon.azRef.sub">Az de l'objet bloqué</div></div>
             <input class="settings-input" id="s-az-altmax-ref" type="number" value="90">
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Az direction obstacle (°)</div><div class="settings-sub">Direction de l'obstacle supérieur</div></div>
+            <div><div class="settings-label" data-i18n="settings.horizon.obstacleDirection.label">Az direction obstacle (°)</div><div class="settings-sub" data-i18n="settings.horizon.obstacleDirection.sub">Direction de l'obstacle supérieur</div></div>
             <input class="settings-input" id="s-az-bord" type="number" value="0" readonly style="opacity:.5">
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🌃 Éclairage local</div>
+        <div class="settings-title" data-i18n="settings.section.lighting">🌃 Éclairage local</div>
         <div class="settings-card">
           <div class="settings-row">
-            <div><div class="settings-label">Mode d'éclairage</div><div class="settings-sub">Éclairage public / urbain au niveau de votre site</div></div>
+            <div><div class="settings-label" data-i18n="settings.lighting.mode.label">Mode d'éclairage</div><div class="settings-sub" data-i18n="settings.lighting.mode.sub">Éclairage public / urbain au niveau de votre site</div></div>
             <select class="settings-select" id="s-lighting-mode" onchange="onLightingModeChange()">
-              <option value="none">Aucun éclairage local</option>
-              <option value="always_on">Éclairage toute la nuit</option>
-              <option value="night_off">Extinction nocturne</option>
+              <option value="none" data-i18n="settings.lighting.mode.none">Aucun éclairage local</option>
+              <option value="always_on" data-i18n="settings.lighting.mode.alwaysOn">Éclairage toute la nuit</option>
+              <option value="night_off" data-i18n="settings.lighting.mode.nightOff">Extinction nocturne</option>
             </select>
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Libellé</div><div class="settings-sub">Nom affiché dans les courbes</div></div>
-            <input class="settings-input settings-input-md" id="s-lighting-label" type="text" placeholder="Éclairage public">
+            <div><div class="settings-label" data-i18n="settings.lighting.label.label">Libellé</div><div class="settings-sub" data-i18n="settings.lighting.label.sub">Nom affiché dans les courbes</div></div>
+            <input class="settings-input settings-input-md" id="s-lighting-label" type="text" placeholder="Éclairage public" data-i18n-placeholder="settings.lighting.label.placeholder">
           </div>
           <div class="settings-row" id="s-lighting-off-row">
-            <div><div class="settings-label">Extinction (heure locale)</div><div class="settings-sub">Heure d'extinction des lumières</div></div>
+            <div><div class="settings-label" data-i18n="settings.lighting.off.label">Extinction (heure locale)</div><div class="settings-sub" data-i18n="settings.lighting.off.sub">Heure d'extinction des lumières</div></div>
             <input class="settings-input settings-input-sm" id="s-lighting-off" type="time" value="22:30">
           </div>
           <div class="settings-row" id="s-lighting-on-row">
-            <div><div class="settings-label">Rallumage (heure locale)</div><div class="settings-sub">Heure de rallumage des lumières</div></div>
+            <div><div class="settings-label" data-i18n="settings.lighting.on.label">Rallumage (heure locale)</div><div class="settings-sub" data-i18n="settings.lighting.on.sub">Heure de rallumage des lumières</div></div>
             <input class="settings-input settings-input-sm" id="s-lighting-on" type="time" value="06:00">
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🎛️ Familles de filtres</div>
+        <div class="settings-title" data-i18n="settings.section.filters">🎛️ Familles de filtres</div>
         <div class="settings-card">
           <div class="settings-row">
-            <div><div class="settings-label">Neutre / sans filtre</div><div class="settings-sub">Ex. sans filtre, UV/IR cut, filtre L</div></div>
+            <div><div class="settings-label" data-i18n="settings.filters.neutral.label">Neutre / sans filtre</div><div class="settings-sub" data-i18n="settings.filters.neutral.sub">Ex. sans filtre, UV/IR cut, filtre L</div></div>
             <div class="toggle on" id="tog-neutral" onclick="tog('neutral',this)"></div>
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Anti-pollution</div><div class="settings-sub">Ex. L-Pro, IDAS LPS, Antlia broadband / light-pollution</div></div>
+            <div><div class="settings-label" data-i18n="settings.filters.lightpollution.label">Anti-pollution</div><div class="settings-sub" data-i18n="settings.filters.lightpollution.sub">Ex. L-Pro, IDAS LPS, Antlia broadband / light-pollution</div></div>
             <div class="toggle on" id="tog-lightpollution" onclick="tog('lightpollution',this)"></div>
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Double bande</div><div class="settings-sub">Ex. L-eXtreme, ALP-T, NBZ, D1/D2</div></div>
+            <div><div class="settings-label" data-i18n="settings.filters.dualband.label">Double bande</div><div class="settings-sub" data-i18n="settings.filters.dualband.sub">Ex. L-eXtreme, ALP-T, NBZ, D1/D2</div></div>
             <div class="toggle on" id="tog-dualband" onclick="tog('dualband',this)"></div>
           </div>
           <div class="settings-row">
-            <div><div class="settings-label">Bande étroite</div><div class="settings-sub">Ex. Hα, OIII, SII</div></div>
+            <div><div class="settings-label" data-i18n="settings.filters.narrowband.label">Bande étroite</div><div class="settings-sub" data-i18n="settings.filters.narrowband.sub">Ex. Hα, OIII, SII</div></div>
             <div class="toggle" id="tog-narrowband" onclick="tog('narrowband',this)"></div>
           </div>
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">📊 Catalogue</div>
+        <div class="settings-title" data-i18n="settings.section.catalog">📊 Catalogue</div>
         <div class="settings-card">
           <div class="settings-row">
             <div>
-              <div class="settings-label">Meilleurs objets à afficher</div>
+              <div class="settings-label" data-i18n="settings.catalog.topN.label">Meilleurs objets à afficher</div>
               <div class="settings-sub" id="catalog-info">… objets dans le catalogue</div>
             </div>
             <div class="settings-input-group">

@@ -32,7 +32,7 @@ function saveSettings(){
   renderTargets();
   if(currentPage==='chart') drawChart();
   if(currentPage==='planner') renderPlanner();
-  showToast('✅ Paramètres appliqués !');
+  showToast('✅ ' + SkyFrameI18n.translate('settings.toast.applied'));
 }
 
 function applyCatalogTopN(){
@@ -43,21 +43,21 @@ function applyCatalogTopN(){
     updateCatalogTopNList();
     renderTargets();
     renderCatalogStatsPanel();
-    showToast(`📊 Top ${v} appliqué`);
+    showToast('📊 ' + SkyFrameI18n.translate('settings.toast.catalogTopApplied', { value: v }));
   }
 }
 
 function getGPS(){
-  if(!navigator.geolocation){showToast('❌ GPS non dispo');return;}
-  document.getElementById('gps-status').textContent='Localisation...';
+  if(!navigator.geolocation){showToast('❌ ' + SkyFrameI18n.translate('settings.toast.gpsUnavailable'));return;}
+  document.getElementById('gps-status').textContent=SkyFrameI18n.translate('settings.location.gps.locating');
   navigator.geolocation.getCurrentPosition(p=>{
     const la=p.coords.latitude.toFixed(4),lo=p.coords.longitude.toFixed(4);
     document.getElementById('s-lat').value=la;
     document.getElementById('s-lon').value=lo;
     document.getElementById('gps-status').textContent=`${la}°N, ${lo}°E`;
     document.getElementById('chip-loc').textContent=`📍 GPS ✅`;
-    showToast(`📡 ${la}°N, ${lo}°E`);
-  },()=>showToast('❌ Erreur GPS'));
+    showToast('📡 ' + SkyFrameI18n.translate('settings.toast.gpsCoords', { lat: la, lon: lo }));
+  },()=>showToast('❌ ' + SkyFrameI18n.translate('settings.toast.gpsError')));
 }
 
 function tog(k,el){
@@ -107,9 +107,9 @@ function importSiteProfile(input){
       const p=JSON.parse(e.target.result);
       applySiteProfile(p);
       try{localStorage.setItem('skyframe_site_profile',JSON.stringify(p));}catch(err){}
-      showToast('✅ Profil chargé : '+(p.name||'sans nom'));
+      showToast('✅ ' + SkyFrameI18n.translate('settings.toast.profileLoaded', { name: p.name || SkyFrameI18n.translate('settings.profile.unnamed') }));
     } catch(err){
-      alert('Erreur lecture JSON : '+err.message);
+      alert(SkyFrameI18n.translate('settings.alert.jsonReadError', { message: err.message }));
     }
   };
   reader.readAsText(input.files[0]);
@@ -172,14 +172,14 @@ function onSiteSearchInput(val) {
 function _doSiteSearch(query) {
   const el = document.getElementById('site-search-results');
   if (!el) return;
-  el.innerHTML = '<div class="site-search-item site-search-loading">Recherche…</div>';
+  el.innerHTML = '<div class="site-search-item site-search-loading">' + SkyFrameI18n.translate('settings.search.loading') + '</div>';
   el.style.display = 'block';
   const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(query);
   fetch(url)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => _renderSiteSearchResults(data))
     .catch(() => {
-      el.innerHTML = '<div class="site-search-item site-search-error">Erreur réseau — réessayer</div>';
+      el.innerHTML = '<div class="site-search-item site-search-error">' + SkyFrameI18n.translate('settings.search.networkError') + '</div>';
     });
 }
 
@@ -187,7 +187,7 @@ function _renderSiteSearchResults(results) {
   const el = document.getElementById('site-search-results');
   if (!el) return;
   if (!results || results.length === 0) {
-    el.innerHTML = '<div class="site-search-item site-search-empty">Aucun résultat</div>';
+    el.innerHTML = '<div class="site-search-item site-search-empty">' + SkyFrameI18n.translate('settings.search.empty') + '</div>';
     el.style.display = 'block';
     return;
   }
@@ -261,7 +261,7 @@ document.addEventListener('click', function(e) {
 });
 
 function geolocateSite(){
-  if(!navigator.geolocation){alert('Géolocalisation non disponible');return;}
+  if(!navigator.geolocation){alert(SkyFrameI18n.translate('settings.alert.geolocationUnavailable'));return;}
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat=Math.round(pos.coords.latitude*1000)/1000;
     const lon=Math.round(pos.coords.longitude*1000)/1000;
@@ -272,8 +272,8 @@ function geolocateSite(){
     if(elLon) elLon.value=lon;
     nightBounds=null; nightBoundsDate=null;
     if(typeof renderTargets==='function') renderTargets();
-    showToast('📍 Position : '+lat+', '+lon);
+    showToast('📍 ' + SkyFrameI18n.translate('settings.toast.position', { lat: lat, lon: lon }));
   },err=>{
-    showToast('❌ Erreur GPS : '+err.message);
+    showToast('❌ ' + SkyFrameI18n.translate('settings.toast.gpsErrorMessage', { message: err.message }));
   });
 }
