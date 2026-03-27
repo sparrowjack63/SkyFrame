@@ -129,10 +129,15 @@ function buildPlanningState(){
   for(let i=1;i<usableItems.length;i++){
     const prev=usableItems[i-1], cur=usableItems[i];
     if(cur.startDate<prev.endDate){
-      conflicts.push(`${prev.name} chevauche ${cur.name} (${formatPlanningTime(cur.startDate)} avant ${formatPlanningTime(prev.endDate)})`);
+      conflicts.push(skyFramePlannerTranslate('planner.alert.conflictItem', {
+        previous: prev.name,
+        current: cur.name,
+        currentStart: formatPlanningTime(cur.startDate),
+        previousEnd: formatPlanningTime(prev.endDate)
+      }));
     }
   }
-  const tooShort=plannedItems.filter(it=>it&&it.status==='short').map(it=>`${it.name} : fenêtre exploitable ${formatDurationMinutes(it.usableMinutes)}`);
+  const tooShort=plannedItems.filter(it=>it&&it.status==='short').map(it=>skyFramePlannerTranslate('planner.alert.shortItem', { name: it.name, duration: formatDurationMinutes(it.usableMinutes) }));
   const totalRaw=usableItems.reduce((s,it)=>s+it.rawMinutes,0);
   const totalUsable=usableItems.reduce((s,it)=>s+it.usableMinutes,0);
   const totalExposures=usableItems.reduce((s,it)=>s+it.exposures,0);
@@ -250,18 +255,23 @@ function buildPlannerNightTimeline(state){
   const overlayY=lightBandTop+6;
   const overlayInnerPx=4;
   const moonBandLabelY=moonBandTop+(moonBandH/2);
-  const lightLegendLabels={'glow-off':'lumières éteintes + lune basse','glow-low':'gêne faible','glow-mid':'gêne modérée','glow-high':'gêne forte'};
+  const lightLegendLabels={
+    'glow-off':skyFramePlannerTranslate('planner.timeline.legend.lightsOffLowMoon'),
+    'glow-low':skyFramePlannerTranslate('planner.timeline.legend.lowDisturbance'),
+    'glow-mid':skyFramePlannerTranslate('planner.timeline.legend.moderateDisturbance'),
+    'glow-high':skyFramePlannerTranslate('planner.timeline.legend.highDisturbance')
+  };
   const emptyStateMarkup=!hasItems?`<div style="position:absolute;left:${padPx}px;right:${padPx}px;top:${laneTop+16}px;padding:14px 16px;border-radius:12px;border:1px dashed rgba(255,255,255,.14);background:rgba(6,16,23,.58);backdrop-filter:blur(2px);text-align:left;">
-        <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px;">Planification vide, structure conservée</div>
-        <div style="font-size:11px;line-height:1.6;color:var(--text2);">La timeline reste visible pour garder les repères de nuit. Ajoute des cibles depuis <b>Cibles</b> ou <b>Courbes</b> pour remplir automatiquement les fenêtres utiles.</div>
+        <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px;">${skyFramePlannerTranslate('planner.timeline.emptyTitle')}</div>
+        <div style="font-size:11px;line-height:1.6;color:var(--text2);">${skyFramePlannerTranslate('planner.timeline.emptyBody')}</div>
       </div>`:'';
   return `<div class="planner-session planner-nightviz">
     <div class="planner-nightviz-head">
       <div>
-        <div class="planner-nightviz-title">Timeline visuelle de la nuit</div>
-        <div class="planner-nightviz-sub">Lecture rapide ${fmtH(axisStart)} → ${fmtH(axisEnd)} · bande haute = ambiance lumineuse, traits = repères lune, blocs = fenêtres utiles triées par début</div>
+        <div class="planner-nightviz-title">${skyFramePlannerTranslate('planner.timeline.title')}</div>
+        <div class="planner-nightviz-sub">${skyFramePlannerTranslate('planner.timeline.subtitle', { start: fmtH(axisStart), end: fmtH(axisEnd) })}</div>
       </div>
-      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${hasItems?(state.conflicts.length?`⚠️ ${state.conflicts.length} chevauchement${state.conflicts.length>1?'s':''}`:'ordre lisible'):'timeline vide'}${gaps.length?` · ${gaps.length} trou${gaps.length>1?'s':''}`:''}</div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${hasItems?(state.conflicts.length?skyFramePlannerTranslate('planner.timeline.overlapsCount', { count: state.conflicts.length, suffix: state.conflicts.length>1?'s':'' }):skyFramePlannerTranslate('planner.timeline.readableOrder')):skyFramePlannerTranslate('planner.timeline.emptyShort')}${gaps.length?skyFramePlannerTranslate('planner.timeline.gapsCount', { count: gaps.length, suffix: gaps.length>1?'s':'' }):''}</div>
     </div>
     <div class="planner-nightviz-scroll">
     <div class="planner-nightviz-axis" style="height:${axisHeight}px;">
@@ -294,12 +304,12 @@ function buildPlannerNightTimeline(state){
       <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:linear-gradient(90deg,rgba(105,240,174,.2),rgba(105,240,174,.34));"></span>${lightLegendLabels['glow-off']}</div>
       <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:linear-gradient(90deg,rgba(255,213,79,.12),rgba(255,213,79,.24));"></span>${lightLegendLabels['glow-mid']}</div>
       <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:linear-gradient(90deg,rgba(255,107,107,.12),rgba(255,107,107,.26));"></span>${lightLegendLabels['glow-high']}</div>
-      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:rgba(255,255,255,.32);"></span>creux entre 2 cibles</div>
-      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:linear-gradient(90deg,#ff8a80,#ffd54f);"></span>zone de chevauchement</div>
-      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#69f0ae;"></span>OK</div>
-      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#ffd54f;"></span>limite</div>
-      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#ff8a80;"></span>trop court</div>
-      <div class="planner-nightviz-legend-item"><span style="font-size:11px;line-height:1;">🌙↑↓</span>lever / coucher de lune</div>
+      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:rgba(255,255,255,.32);"></span>${skyFramePlannerTranslate('planner.timeline.legend.gap')}</div>
+      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:linear-gradient(90deg,#ff8a80,#ffd54f);"></span>${skyFramePlannerTranslate('planner.timeline.legend.overlap')}</div>
+      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#69f0ae;"></span>${skyFramePlannerTranslate('planner.status.ok')}</div>
+      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#ffd54f;"></span>${skyFramePlannerTranslate('planner.status.limit')}</div>
+      <div class="planner-nightviz-legend-item"><span class="planner-nightviz-dot" style="background:#ff8a80;"></span>${skyFramePlannerTranslate('planner.status.short')}</div>
+      <div class="planner-nightviz-legend-item"><span style="font-size:11px;line-height:1;">🌙↑↓</span>${skyFramePlannerTranslate('planner.timeline.legend.moonriseMoonset')}</div>
     </div>
   </div>`;
 }
