@@ -31,12 +31,19 @@ function _angDist(ra1, dec1, ra2, dec2) {
   return toD(2*Math.asin(Math.min(1,Math.sqrt(a))));
 }
 
+function _utcOffsetFromLon(lon) {
+  // Approximate UTC offset from longitude (15° per hour)
+  return Math.round(lon / 15);
+}
+
 function _isEverVisible(ra, dec) {
+  const year = new Date().getFullYear();
+  const utcOff = _utcOffsetFromLon(S.lon);
   for (let m=0; m<12; m++) {
-    for (let h=21; h<=29; h++) { // 21h→5h local CET (UTC+1)
-      const hUTC = h-1;
+    for (let h=21; h<=29; h++) { // 21h→5h local time
+      const hUTC = h - utcOff;
       const day  = hUTC>=24 ? 16 : 15;
-      const tc   = new Date(Date.UTC(2026, m, day, hUTC%24, 0, 0));
+      const tc   = new Date(Date.UTC(year, m, day, ((hUTC%24)+24)%24, 0, 0));
       const l    = lst(jd(tc), S.lon);
       const {alt,az} = altaz(ra, dec, l, S.lat);
       if (isAcc(alt,az)) return true;
@@ -46,13 +53,15 @@ function _isEverVisible(ra, dec) {
 }
 
 function _calcVisibleMonths(ra, dec) {
+  const year = new Date().getFullYear();
+  const utcOff = _utcOffsetFromLon(S.lon);
   const months=[];
   for (let m=0; m<12; m++) {
     let vis=false;
     for (let h=21; h<=29 && !vis; h++) {
-      const hUTC = h-1;
+      const hUTC = h - utcOff;
       const day  = hUTC>=24 ? 16 : 15;
-      const tc   = new Date(Date.UTC(2026, m, day, hUTC%24, 0, 0));
+      const tc   = new Date(Date.UTC(year, m, day, ((hUTC%24)+24)%24, 0, 0));
       const l    = lst(jd(tc), S.lon);
       const {alt,az} = altaz(ra, dec, l, S.lat);
       if (isAcc(alt,az)) vis=true;

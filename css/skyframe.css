@@ -114,6 +114,9 @@ header{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);border-bo
 
 /* OBJECT CARDS */
 .objects-grid{display:flex;flex-direction:column;gap:7px;}
+
+/* TARGETS DESKTOP LAYOUT */
+
 .obj-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .2s;border-left:3px solid;position:relative;overflow:hidden;}
 .obj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);pointer-events:none;}
 .obj-card:active{transform:scale(.98);}

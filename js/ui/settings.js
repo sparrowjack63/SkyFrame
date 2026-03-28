@@ -104,6 +104,11 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
+  // Masquer time-bar et moon-bar sur les pages sans slider
+  const showTimebar = (name==='targets'||name==='chart');
+  document.querySelectorAll('.time-bar,.moon-bar').forEach(el=>{
+    el.style.display = showTimebar ? '' : 'none';
+  });
   if(name==='chart'){setTimeout(drawChart,50);}
   if(name==='planner') renderPlanner();
   if(name==='targets') renderTargets();

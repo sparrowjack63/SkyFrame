@@ -59,50 +59,48 @@
       <div class="ntl-phases" id="ntl-phases"></div>
       <div class="ntl-moon-events" id="ntl-moon-events"></div>
     </div>
+    <div class="time-bar">
+      <div class="time-bar-top">
+        <div>
+          <div class="time-display" id="clock">--:--:--</div>
+          <div class="time-date" id="clock-date">--</div>
+        </div>
+        <div class="time-meta">
+          <div class="time-date" data-i18n="shell.localLst">TSL local</div>
+          <div class="time-lst" id="clock-lst">--h--m</div>
+        </div>
+      </div>
+      <div class="date-nav-row">
+        <button class="time-btn" onclick="changeDate(-1)">&#9664;</button>
+        <span class="date-nav-label" id="date-forecast-label" onclick="toggleDatePicker('targets')" style="cursor:pointer;user-select:none" data-i18n-title="shell.pickDate">Ce soir 📅</span>
+        <input type="date" id="date-picker-targets" class="date-picker-input" style="display:none" onchange="setDateFromPicker(this.value)">
+        <button class="time-btn" onclick="changeDate(+1)">&#9654;</button>
+      </div>
+      <div class="time-controls">
+        <button class="time-btn active-now" id="btn-now" onclick="setNow()">⬤ <span data-i18n="shell.live">DIRECT</span></button>
+        <input type="range" class="time-slider" id="time-slider" min="0" max="600" value="0" oninput="onSlider(this.value)">
+        <span class="time-btn" id="slider-label" style="min-width:42px;text-align:center">--h--</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);font-family:var(--mono);padding:0 2px;margin-top:2px;">
+        <span id="slider-start-label">--h--</span>
+        <span id="twilight-info" style="color:var(--gold);font-size:8px"></span>
+        <span id="slider-end-label">--h--</span>
+      </div>
+      <div class="time-slider-emphasis" data-i18n="shell.sliderHint">Fais glisser le curseur pour parcourir la nuit</div>
+    </div>
+    <div class="moon-bar">
+      <div class="moon-icon" id="moon-icon">🌕</div>
+      <div class="moon-info">
+        <div class="moon-phase" id="moon-phase">--</div>
+        <div class="moon-details" id="moon-details">--</div>
+      </div>
+      <span class="chip" id="moon-chip">--%</span>
+    </div>
   </header>
 
   <div id="content">
     <!-- CIBLES -->
     <div class="page active" id="page-targets">
-      <div class="time-bar">
-        <div class="time-bar-top">
-          <div>
-            <div class="time-display" id="clock">--:--:--</div>
-            <div class="time-date" id="clock-date">--</div>
-          </div>
-          <div class="time-meta">
-            <div class="time-date" data-i18n="shell.localLst">TSL local</div>
-            <div class="time-lst" id="clock-lst">--h--m</div>
-          </div>
-        </div>
-        <div class="date-nav-row">
-          <button class="time-btn" onclick="changeDate(-1)">&#9664;</button>
-          <span class="date-nav-label" id="date-forecast-label" onclick="toggleDatePicker('targets')" style="cursor:pointer;user-select:none" data-i18n-title="shell.pickDate">Ce soir 📅</span>
-          <input type="date" id="date-picker-targets" class="date-picker-input" style="display:none" onchange="setDateFromPicker(this.value)">
-          <button class="time-btn" onclick="changeDate(+1)">&#9654;</button>
-        </div>
-        <div class="time-controls">
-          <button class="time-btn active-now" id="btn-now" onclick="setNow()">⬤ <span data-i18n="shell.live">DIRECT</span></button>
-          <input type="range" class="time-slider" id="time-slider" min="0" max="600" value="0" oninput="onSlider(this.value)">
-          <span class="time-btn" id="slider-label" style="min-width:42px;text-align:center">--h--</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text3);font-family:var(--mono);padding:0 2px;margin-top:2px;">
-          <span id="slider-start-label">--h--</span>
-          <span id="twilight-info" style="color:var(--gold);font-size:8px"></span>
-          <span id="slider-end-label">--h--</span>
-        </div>
-        <div class="time-slider-emphasis" data-i18n="shell.sliderHint">Fais glisser le curseur pour parcourir la nuit</div>
-      </div>
-
-      <div class="moon-bar">
-        <div class="moon-icon" id="moon-icon">🌕</div>
-        <div class="moon-info">
-          <div class="moon-phase" id="moon-phase">--</div>
-          <div class="moon-details" id="moon-details">--</div>
-        </div>
-        <span class="chip" id="moon-chip">--%</span>
-      </div>
-
       <button class="mobile-filter-toggle" id="mobile-filter-toggle-targets" onclick="toggleMobileFilters('targets')">
         <span class="mft-label" data-i18n="shell.filters">Filtres</span>
         <span class="mft-active" id="mft-active-targets">Tous</span>
