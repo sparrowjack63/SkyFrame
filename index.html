@@ -65,9 +65,19 @@
           <div class="time-display" id="clock">--:--:--</div>
           <div class="time-date" id="clock-date">--</div>
         </div>
-        <div class="time-meta">
-          <div class="time-date" data-i18n="shell.localLst">TSL local</div>
-          <div class="time-lst" id="clock-lst">--h--m</div>
+        <div class="time-bar-side">
+          <div class="time-meta">
+            <div class="time-date" data-i18n="shell.localLst">TSL local</div>
+            <div class="time-lst" id="clock-lst">--h--m</div>
+          </div>
+          <div class="moon-bar moon-bar-inline" title="Lune">
+            <div class="moon-icon" id="moon-icon">🌕</div>
+            <div class="moon-info">
+              <div class="moon-phase" id="moon-phase">--</div>
+              <div class="moon-details moon-details-hidden" id="moon-details">--</div>
+            </div>
+            <span class="chip moon-chip-inline" id="moon-chip">--%</span>
+          </div>
         </div>
       </div>
       <div class="date-nav-row">
@@ -87,14 +97,6 @@
         <span id="slider-end-label">--h--</span>
       </div>
       <div class="time-slider-emphasis" data-i18n="shell.sliderHint">Fais glisser le curseur pour parcourir la nuit</div>
-    </div>
-    <div class="moon-bar">
-      <div class="moon-icon" id="moon-icon">🌕</div>
-      <div class="moon-info">
-        <div class="moon-phase" id="moon-phase">--</div>
-        <div class="moon-details" id="moon-details">--</div>
-      </div>
-      <span class="chip" id="moon-chip">--%</span>
     </div>
   </header>
 
