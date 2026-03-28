@@ -116,23 +116,18 @@ header{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);border-bo
 .objects-grid{display:flex;flex-direction:column;gap:7px;}
 
 /* TARGETS DESKTOP LAYOUT */
-.targets-sticky-bar,
-.targets-scroll-area{min-width:0;}
-
 @media (min-width:769px){
   #page-targets{
     display:flex;
     flex-direction:column;
-    height:100%;
     min-height:0;
-    overflow:hidden;
     gap:0;
   }
 
   #page-targets .targets-sticky-bar{
     position:sticky;
     top:0;
-    z-index:20;
+    z-index:10;
     background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 78%,rgba(5,10,26,0) 100%);
     padding-bottom:6px;
     margin-bottom:4px;
@@ -141,7 +136,6 @@ header{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);border-bo
 
   #page-targets .targets-scroll-area{
     flex:1;
-    min-height:0;
     overflow-y:auto;
     overflow-x:hidden;
     padding-right:2px;
