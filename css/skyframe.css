@@ -114,6 +114,39 @@ header{background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);border-bo
 
 /* OBJECT CARDS */
 .objects-grid{display:flex;flex-direction:column;gap:7px;}
+
+/* TARGETS DESKTOP LAYOUT */
+.targets-sticky-bar,
+.targets-scroll-area{min-width:0;}
+
+@media (min-width:769px){
+  #page-targets{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    min-height:0;
+    overflow:hidden;
+    gap:0;
+  }
+
+  #page-targets .targets-sticky-bar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:linear-gradient(180deg,var(--bg) 0%,var(--bg) 78%,rgba(5,10,26,0) 100%);
+    padding-bottom:6px;
+    margin-bottom:4px;
+    flex-shrink:0;
+  }
+
+  #page-targets .targets-scroll-area{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding-right:2px;
+  }
+}
 .obj-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;cursor:pointer;transition:all .2s;border-left:3px solid;position:relative;overflow:hidden;}
 .obj-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);pointer-events:none;}
 .obj-card:active{transform:scale(.98);}
