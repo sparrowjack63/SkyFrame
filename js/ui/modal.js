@@ -76,7 +76,7 @@ function openModal(id){
       ${winStart?`<div class="modal-grid" style="margin-bottom:8px">
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.start','Début')}</div><div class="modal-stat-value" style="color:#69f0ae">${ft(winStart)}</div></div>
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.end','Fin')}</div><div class="modal-stat-value" style="color:#ff6b6b">${ft(winEnd)}</div></div>
-      </div>${tlHTML}`:`<div style="color:#ff6b6b;font-size:12px;padding:8px">${modalTranslate('modal.window.unavailable','Pas accessible cette nuit depuis ce balcon.')}</div>`}
+      </div>${tlHTML}`:`<div style="color:#ff6b6b;font-size:12px;padding:8px">${modalTranslate('modal.window.unavailable','Pas accessible cette nuit depuis votre site.')}</div>`}
     </div>
 
     <div class="modal-section">

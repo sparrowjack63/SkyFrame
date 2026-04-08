@@ -366,7 +366,7 @@ function drawChart(){
     ctx.beginPath();ctx.moveTo(P.l,yMax);ctx.lineTo(P.l+cW,yMax);ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle='rgba(255,150,0,1)';ctx.font='9px "Space Mono"';ctx.textAlign='left';
-    ctx.fillText('🏠 balcon↑ '+S.altMax+'° @ az'+S.azAltMaxRef+'°',P.l+4,yMax-3);
+    ctx.fillText('🏠 site↑ '+S.altMax+'° @ az'+S.azAltMaxRef+'°',P.l+4,yMax-3);
     ctx.fillStyle='rgba(255,120,0,.05)';ctx.fillRect(P.l,P.t,cW,yMax-P.t);
   }
 
