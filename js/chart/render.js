@@ -419,6 +419,9 @@ function drawChart(){
   const tbase=new Date(tnow);
   const startHLocal=Math.floor(zb.s)%24;
   const startMLocal=Math.round((zb.s%1)*60);
+  // Correction nuit traversant minuit : si on est après minuit avant le lever, la nuit a commencé hier
+  const _tbaseNowH = tbase.getHours() + tbase.getMinutes()/60;
+  if(_tbaseNowH < nb.sunrise) tbase.setDate(tbase.getDate() - 1);
   tbase.setHours(startHLocal,startMLocal,0,0);
   const STEPS=Math.ceil(spanH*8)+1;
   const searchActive=!!normalizeSearchText(objectSearch);
@@ -723,7 +726,10 @@ function drawNightTimeline(){
     }).join('');
     // Marqueurs lune sur la barre
     // Utiliser une base temporelle alignée sur le début de la nuit (cohérence avec les courbes)
+    // Correction : si on est après minuit mais avant le lever du soleil, la nuit a commencé hier
     const _tbaseNtl = getBaseDate();
+    const _nowH = _tbaseNtl.getHours() + _tbaseNtl.getMinutes()/60;
+    if(_nowH < nb.sunrise) _tbaseNtl.setDate(_tbaseNtl.getDate() - 1);
     _tbaseNtl.setHours(Math.floor(nb.sunset)%24, Math.round((nb.sunset%1)*60), 0, 0);
     const moonResult2 = getMoonTimelineEvents(nb, _tbaseNtl, nb.sunset, nb.sunrise, 240);
     const moonEvts2 = moonResult2 && Array.isArray(moonResult2.events) ? moonResult2.events : [];
