@@ -36,19 +36,20 @@ function isAcc(alt,az){
   if(az<S.azMin || az>S.azMax) return false;
   if(S.horizonConstraint !== false){
     // Obstacle principal (azBord) — s'applique si kBord > 0
+    // On utilise cos signé (pas |cos|) pour n'appliquer l'obstacle que dans les ±90° autour de azBord
     if(S.kBord > 0){
-      const cos1 = Math.abs(Math.cos(toR(az - S.azBord)));
-      const effMax1 = cos1 < 0.05 ? 90 : toD(Math.atan(S.kBord / cos1));
-      if(alt > effMax1) return false;
+      const cos1 = Math.cos(toR(az - S.azBord));
+      if(cos1 > 0.05){
+        const effMax1 = toD(Math.atan(S.kBord / cos1));
+        if(alt > effMax1) return false;
+      }
     }
-    // Obstacle secondaire (azBordEst) — générique, s'applique si kBordEst > 0
-    // et si az est dans la moitié du champ proche de azBordEst
+    // Obstacle secondaire (azBordEst) — s'applique si kBordEst > 0
+    // Même correction : cos signé, pas |cos|
     if(S.kBordEst > 0){
-      const halfChamp = (S.azMax - S.azMin) / 2;
-      const dBordEst = Math.abs(az - S.azBordEst);
-      if(dBordEst <= halfChamp){
-        const cos2 = Math.abs(Math.cos(toR(az - S.azBordEst)));
-        const effMax2 = cos2 < 0.05 ? 90 : toD(Math.atan(S.kBordEst / cos2));
+      const cos2 = Math.cos(toR(az - S.azBordEst));
+      if(cos2 > 0.05){
+        const effMax2 = toD(Math.atan(S.kBordEst / cos2));
         if(alt > effMax2) return false;
       }
     }
