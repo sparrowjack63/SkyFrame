@@ -62,7 +62,21 @@ function fmtH(h){
   return `${String(hh).padStart(2,'0')}h${String(mm).padStart(2,'0')}`;
 }
 
-function getDateForNightHour(hLocal, baseDate=getBaseDate()){
+function getNightBaseDate(){
+  // Correction nuit traversant minuit : si on est après minuit avant le lever du soleil,
+  // la nuit courante a commencé hier — on recule d'un jour
+  const nb = getOrComputeNightBounds();
+  const now = getBaseDate();
+  const nowH = now.getHours() + now.getMinutes()/60;
+  if(nowH < nb.sunrise){
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    return d;
+  }
+  return now;
+}
+
+function getDateForNightHour(hLocal, baseDate=getNightBaseDate()){
   const d=new Date(baseDate);
   const hWrapped=((hLocal%24)+24)%24;
   const totalMin=Math.round(hWrapped*60);
