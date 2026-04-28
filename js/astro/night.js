@@ -21,16 +21,22 @@ function sunAlt(jdv, lat, lon){
   return toD(Math.asin(Math.max(-1,Math.min(1,sinAlt))));
 }
 
+function getLocalUtcOffsetHours(date){
+  // Retourne l'offset local en heures pour la date donnée (DST inclus)
+  return -date.getTimezoneOffset()/60;
+}
+
 function findSunCrossing(date, altTarget, searchStartH, searchEndH){
   // Binary search in local hours for sun crossing altTarget
   // Auto-detects direction: descending (evening) or ascending (dawn)
   const midnight=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate());
+  const utcOffsetH=getLocalUtcOffsetHours(date);
   let lo=searchStartH, hi=searchEndH;
-  const j0=jd(new Date(midnight+(searchStartH-1)*3600000));
+  const j0=jd(new Date(midnight+(searchStartH-utcOffsetH)*3600000));
   const descending=sunAlt(j0,S.lat,S.lon)>altTarget;
   for(let i=0;i<40;i++){
     const mid=(lo+hi)/2;
-    const h_ut=mid-1; // UTC+1 (France hiver)
+    const h_ut=mid-utcOffsetH;
     const j=jd(new Date(midnight+h_ut*3600000)); // overflow géré nativement
     const a=sunAlt(j,S.lat,S.lon);
     if(descending ? a>altTarget : a<altTarget) lo=mid; else hi=mid;
