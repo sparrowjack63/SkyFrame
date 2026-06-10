@@ -96,12 +96,7 @@ function lightPollutionScore(t){
     const MSTEPS = 24;
     for(let i=0;i<=MSTEPS;i++){
       const hL = darkStart + i/MSTEPS*darkSpan;
-      const h_ut = (hL - 1 + 24) % 24;
-      const bd = hL < 24
-        ? new Date(t.getFullYear(),t.getMonth(),t.getDate())
-        : new Date(t.getFullYear(),t.getMonth(),t.getDate()+1);
-      bd.setHours(Math.floor(h_ut), Math.round((h_ut%1)*60), 0, 0);
-      if(moonAltAtTime(bd) > 0) moonVisibleH += darkSpan/MSTEPS;
+      if(moonAltAtTime(getDateForNightHour(hL)) > 0) moonVisibleH += darkSpan/MSTEPS;
     }
   }
   // Fraction lune visible sur nuit noire (0→1)

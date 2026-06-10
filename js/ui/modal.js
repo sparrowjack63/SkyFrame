@@ -58,7 +58,7 @@ function openModal(id){
   }
 
   document.getElementById('modal-body').innerHTML=`
-    <div class="modal-title" style="color:${color}">${formatDisplayName(o)}</div>
+    <div class="modal-title" style="color:${color}">${escapeHtml(formatDisplayName(o))}</div>
     <div class="modal-subtitle">${o.cat} · ${TYPE_LABEL[o.type]} · ${modalTranslate('modal.mag','Mag')} ${o.mag} · ${modalTranslate('modal.size','Taille')} ${o.size}'</div>
 
     <div class="modal-section">
@@ -97,11 +97,11 @@ function openModal(id){
 
     ${o.groupMembers&&o.groupMembers.length?`<div class="modal-section">
       <div class="modal-section-title">🧩 ${modalTranslate('modal.section.composition','Composition')} (${o.groupMembers.length} ${modalTranslate('modal.member','membre')}${o.groupMembers.length>1?modalTranslate('modal.memberPluralSuffix','s'):''})</div>
-      <div style="font-size:11px;color:var(--accent2);line-height:1.8">${o.groupMembers.join(' · ')}</div>
+      <div style="font-size:11px;color:var(--accent2);line-height:1.8">${o.groupMembers.map(escapeHtml).join(' · ')}</div>
     </div>`:''}
     ${o.group&&o.group.length?`<div class="modal-section">
       <div class="modal-section-title">🔗 ${modalTranslate('modal.section.group','Groupe')} (${o.group.length} ${modalTranslate('modal.neighbor','voisin')}${o.group.length>1?modalTranslate('modal.neighborPluralSuffix','s'):''})</div>
-      <div style="font-size:11px;color:var(--accent2);line-height:1.8">${o.group.join(' · ')}</div>
+      <div style="font-size:11px;color:var(--accent2);line-height:1.8">${o.group.map(escapeHtml).join(' · ')}</div>
     </div>`:''}
     <div class="modal-section">
       <div class="modal-section-title">ℹ️ ${modalTranslate('modal.section.info','Infos')}</div>

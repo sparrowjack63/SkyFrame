@@ -41,7 +41,7 @@ function renderTargets(){
   renderCatalogStatsPanel();
 
   const grid=document.getElementById('objects-grid');
-  if(!objs.length){grid.innerHTML=`<div class="no-results"><div style="font-size:40px">🔭</div>${objectSearch?skyFrameTargetsTranslate('targets.empty.search', { query: objectSearch.replace(/</g,'&lt;') }):skyFrameTargetsTranslate('targets.empty.filter')}</div>`;return;}
+  if(!objs.length){grid.innerHTML=`<div class="no-results"><div style="font-size:40px">🔭</div>${objectSearch?skyFrameTargetsTranslate('targets.empty.search', { query: escapeHtml(objectSearch) }):skyFrameTargetsTranslate('targets.empty.filter')}</div>`;return;}
 
   grid.innerHTML=objs.map(o=>{
     const color=TYPE_COLOR[o.type]||'#fff';
@@ -64,14 +64,15 @@ function renderTargets(){
 
     const rt=getRating(o.id);
     const inPlanning=isInPlanning(o.id);
+    const safeId=escapeJsAttr(o.id);
     return `<div class="obj-card ${o.type} ${(!o.acc||!o.shoot)?'inaccessible':''}"
-      onclick="openModal('${o.id}')" style="border-left-color:${color}">
+      onclick="openModal('${safeId}')" style="border-left-color:${color}">
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
-        <button class="night-btn" type="button" onclick="event.stopPropagation();addToPlannerById('${o.id}','cibles')" style="font-size:10px;padding:6px 10px;${inPlanning?'opacity:.65;border-color:#69f0ae;color:#69f0ae;':''}">${inPlanning?skyFrameTargetsTranslate('planner.action.alreadyPlanned'):skyFrameTargetsTranslate('planner.action.plan')}</button>
+        <button class="night-btn" type="button" onclick="event.stopPropagation();addToPlannerById('${safeId}','cibles')" style="font-size:10px;padding:6px 10px;${inPlanning?'opacity:.65;border-color:#69f0ae;color:#69f0ae;':''}">${inPlanning?skyFrameTargetsTranslate('planner.action.alreadyPlanned'):skyFrameTargetsTranslate('planner.action.plan')}</button>
       </div>
       <div class="obj-header">
         <div>
-          <div class="obj-name">${formatDisplayName(o)}</div>
+          <div class="obj-name">${escapeHtml(formatDisplayName(o))}</div>
           <div class="obj-cat">${o.cat} · ${TYPE_LABEL[o.type]}</div>
           <div class="obj-rating-row" style="margin-top:3px;display:flex;align-items:center;flex-wrap:wrap;gap:3px;">
             ${renderStars(rt.stars)}

@@ -32,7 +32,9 @@ function _angDist(ra1, dec1, ra2, dec2) {
 }
 
 function _utcOffsetFromLon(lon) {
-  // Approximate UTC offset from longitude (15° per hour)
+  // Offset solaire moyen du SITE (15° par heure), volontairement basé sur la longitude
+  // et non sur le fuseau du navigateur : le site observé peut être ailleurs dans le monde.
+  // Utilisé uniquement pour estimer la visibilité mensuelle (créneau ~21h–5h heure solaire locale).
   return Math.round(lon / 15);
 }
 
@@ -228,10 +230,16 @@ function _parseOpenNGC(text) {
   return catalog;
 }
 
+// Version OpenNGC épinglée (release GitHub) — à mettre à jour manuellement,
+// puis incrémenter CACHE_KEY pour invalider le cache localStorage.
+const OPENNGC_VERSION='v20260501';
+const OPENNGC_URL=`https://cdn.jsdelivr.net/gh/mattiaverga/OpenNGC@${OPENNGC_VERSION}/database_files/NGC.csv`;
+
 async function _loadOpenNGCCatalog() {
-  const CACHE_KEY='openngc_catalog_v5';
+  const CACHE_KEY='openngc_catalog_v6';
   const CACHE_TTL=7*24*3600*1000;
   _setCatalogStatus('loading');
+  try{ localStorage.removeItem('openngc_catalog_v5'); }catch(e){}
   try {
     // 1. Vérifier le cache
     const raw=localStorage_get_safe(CACHE_KEY);
@@ -247,7 +255,7 @@ async function _loadOpenNGCCatalog() {
       CATALOG_RUNTIME_STATE.cacheTs=cached.ts||null;
     }
     // 2. Fetch CSV
-    const resp=await fetch('https://cdn.jsdelivr.net/gh/mattiaverga/OpenNGC@master/database_files/NGC.csv');
+    const resp=await fetch(OPENNGC_URL);
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const text=await resp.text();
     // 3. Parser + filtrer

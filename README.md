@@ -4,7 +4,7 @@
 
 **[Live demo →](https://skyframe.netlify.app)**
 
-SkyFrame helps astrophotographers plan their sessions by showing which targets are accessible given their specific site, telescope, and horizon constraints — including balcony walls, trees, or buildings. It works fully offline as a PWA with no dependencies.
+SkyFrame helps astrophotographers plan their sessions by showing which targets are accessible given their specific site, telescope, and horizon constraints — including balcony walls, trees, or buildings. It is a dependency-free static web app: no build step, no backend. The OpenNGC catalog is fetched once and cached locally, with a built-in fallback catalog when the network is unavailable.
 
 > [!NOTE]
 > SkyFrame supports arbitrary observing locations worldwide. However, the current curated catalog, seasonal labels, and editorial recommendations are primarily tuned for northern hemisphere usage.
@@ -22,7 +22,7 @@ SkyFrame helps astrophotographers plan their sessions by showing which targets a
 - Stellarium-style lunar impact visualization (teal band with phase %)
 - OpenNGC catalog integration (dynamic, cached 7 days) with ~500 scored objects + static fallback
 - Night / Dim / Day themes
-- Full PWA support, offline-capable
+- No build step, no backend — a single static page with local caching
 
 ---
 
@@ -84,8 +84,20 @@ skyframe/
 │       └── render.js       # Planner rendering
 ├── profiles/
 │   └── example.json        # Example site profile (Paris)
+├── tests/
+│   └── astro.test.js       # Unit tests for js/astro/* (node:test)
 └── docs/
     └── site-profiles.md    # Site profile format documentation
+```
+
+---
+
+## Tests
+
+Unit tests cover the astronomical calculations (`js/astro/*`) and the HTML-escaping helpers. They use the built-in Node.js test runner — no dependency to install (Node ≥ 18):
+
+```bash
+node --test tests/astro.test.js
 ```
 
 ---
@@ -129,7 +141,7 @@ Objects from the editorial catalog (`CUSTOM_META`) are always included regardles
 
 SkyFrame uses a two-layer catalog approach:
 
-1. **OpenNGC** (dynamic): fetched from jsDelivr CDN, parsed and cached for 7 days. Filtered to objects visible from the configured latitude, sized above 3.4', and with acceptable surface brightness.
+1. **OpenNGC** (dynamic): fetched from jsDelivr CDN (pinned to a fixed OpenNGC release — see `OPENNGC_VERSION` in `js/catalog/load.js`), parsed and cached for 7 days. Filtered to objects visible from the configured latitude, sized above 3.4', and with acceptable surface brightness.
 2. **Fallback catalog**: 101 curated objects used when offline or if OpenNGC fails to load.
 3. **Sharpless catalog**: Sh2 nebulae are always merged in (not present in OpenNGC).
 
@@ -140,7 +152,7 @@ Top-N objects (default: 100, configurable) are selected by score. Editorially-cu
 ## Technology
 
 - **Vanilla HTML/CSS/JS** — no framework, no build step, no npm
-- **PWA** — works offline after first load
+- **Static web app** — no backend; catalog and settings cached in LocalStorage (no service worker yet, so the page itself still requires the network to load)
 - **Canvas** — chart rendering
 - **LocalStorage** — settings, planning, catalog cache
 - **OpenNGC** — open-source deep-sky catalog via CDN
