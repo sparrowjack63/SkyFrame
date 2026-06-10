@@ -767,10 +767,7 @@ function drawNightTimeline(){
       const MSTEPS=48;
       for(let i=0;i<=MSTEPS;i++){
         const hL=winS+i/MSTEPS*span;
-        const h_ut=(hL-1+24)%24;
-        const day2=hL<24?new Date(now.getFullYear(),now.getMonth(),now.getDate()):new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
-        day2.setHours(Math.floor(h_ut),Math.round((h_ut%1)*60),0,0);
-        const malt=moonAltAtTime(day2);
+        const malt=moonAltAtTime(getDateForNightHour(hL));
         if(malt<=0) continue;
         const altF=Math.min(1,malt/25);
         const alpha=Math.min(0.55,illBase*altF*0.8);

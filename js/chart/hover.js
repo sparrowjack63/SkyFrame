@@ -165,7 +165,7 @@ function onChartHover(e, canvas){
             </button></div>`
         : '';
       tip.innerHTML=
-        `<div style="color:${co.color};font-weight:700;margin-bottom:3px">${o.name}</div>`+
+        `<div style="color:${co.color};font-weight:700;margin-bottom:3px">${escapeHtml(o.name)}</div>`+
         (starsHtml?`<div style="color:#ffd54f;font-size:13px;margin-bottom:3px">${starsHtml}</div>`:'')+
         reasonHtml+compHtml+
         `<div style="margin-top:4px;opacity:.7;font-size:9px">${typeLabel} · ${o.filter||''}</div>`+

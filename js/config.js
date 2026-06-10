@@ -10,6 +10,21 @@ let S = {
   lightingMode:'none', lightingOffTime:'22:30', lightingOnTime:'06:00', lightingLabel:'Éclairage public'
 };
 
+function escapeHtml(value){
+  return String(value ?? '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function escapeJsAttr(value){
+  // Pour une chaîne interpolée dans du JS inline (onclick="fn('...')") :
+  // les séquences \uXXXX restent inertes à la fois pour le parseur HTML et pour JS
+  return String(value ?? '').replace(/[\\'"<>&\u2028\u2029]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0'));
+}
+
 function parseHHMM(str){
   const parts=(str||'').split(':');
   return parseInt(parts[0]||0,10)+(parseInt(parts[1]||0,10)/60);

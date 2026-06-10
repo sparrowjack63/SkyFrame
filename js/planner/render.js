@@ -56,12 +56,12 @@ function renderPlanner(){
     html+=`<div class="planner-session" id="${cardId}">
       <div class="planner-header" style="background:${color}18;border-left:3px solid ${color};align-items:flex-start;gap:10px;">
         <div>
-          <div class="planner-name">${idx+1}. ${it.name}</div>
+          <div class="planner-name">${idx+1}. ${escapeHtml(it.name)}</div>
           <div class="planner-time">${timeLine}</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <span class="chip" style="background:${statusColor}22;border-color:${statusColor};color:${statusColor};">${it.statusLabel}</span>
-          <button class="night-btn" type="button" onclick="removeFromPlannerById('${it.id}')" style="font-size:10px;padding:6px 10px;">🗑️ ${skyFramePlannerRenderTranslate('planner.action.remove')}</button>
+          <button class="night-btn" type="button" onclick="removeFromPlannerById('${escapeJsAttr(it.id)}')" style="font-size:10px;padding:6px 10px;">🗑️ ${skyFramePlannerRenderTranslate('planner.action.remove')}</button>
         </div>
       </div>
       <div class="planner-body">

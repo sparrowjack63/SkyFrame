@@ -74,7 +74,9 @@ function getNightBaseDate(){
   const nb = getOrComputeNightBounds();
   const now = getBaseDate();
   const nowH = now.getHours() + now.getMinutes()/60;
-  if(nowH < nb.sunrise){
+  // nb.sunrise est en heures continues (>24 = lendemain matin) : ramener sur 0–24
+  const sunriseH = ((nb.sunrise % 24) + 24) % 24;
+  if(nowH < sunriseH){
     const d = new Date(now);
     d.setDate(d.getDate() - 1);
     return d;

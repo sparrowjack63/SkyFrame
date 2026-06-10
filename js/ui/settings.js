@@ -190,17 +190,26 @@ function onSiteSearchInput(val) {
   _debouncedSiteSearch(trimmed);
 }
 
+function _setSiteSearchMessage(el, cls, text) {
+  // Construction DOM (pas d'innerHTML) : les libellés et résultats ne sont jamais interprétés comme du HTML
+  el.replaceChildren();
+  const item = document.createElement('div');
+  item.className = 'site-search-item ' + cls;
+  item.textContent = text;
+  el.appendChild(item);
+}
+
 function _doSiteSearch(query) {
   const el = document.getElementById('site-search-results');
   if (!el) return;
-  el.innerHTML = '<div class="site-search-item site-search-loading">' + SkyFrameI18n.translate('settings.search.loading') + '</div>';
+  _setSiteSearchMessage(el, 'site-search-loading', SkyFrameI18n.translate('settings.search.loading'));
   el.style.display = 'block';
   const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=' + encodeURIComponent(query);
   fetch(url)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => _renderSiteSearchResults(data))
     .catch(() => {
-      el.innerHTML = '<div class="site-search-item site-search-error">' + SkyFrameI18n.translate('settings.search.networkError') + '</div>';
+      _setSiteSearchMessage(el, 'site-search-error', SkyFrameI18n.translate('settings.search.networkError'));
     });
 }
 
@@ -208,14 +217,20 @@ function _renderSiteSearchResults(results) {
   const el = document.getElementById('site-search-results');
   if (!el) return;
   if (!results || results.length === 0) {
-    el.innerHTML = '<div class="site-search-item site-search-empty">' + SkyFrameI18n.translate('settings.search.empty') + '</div>';
+    _setSiteSearchMessage(el, 'site-search-empty', SkyFrameI18n.translate('settings.search.empty'));
     el.style.display = 'block';
     return;
   }
-  el.innerHTML = results.map((r, i) => {
-    const label = _formatNominatimLabel(r);
-    return '<div class="site-search-item" data-idx="' + i + '" onclick="_selectSiteResult(' + i + ')">' + label + '</div>';
-  }).join('');
+  el.replaceChildren();
+  results.forEach((r, i) => {
+    // display_name vient d'une API distante : textContent uniquement, jamais innerHTML
+    const item = document.createElement('div');
+    item.className = 'site-search-item';
+    item.dataset.idx = i;
+    item.textContent = _formatNominatimLabel(r);
+    item.addEventListener('click', () => _selectSiteResult(i));
+    el.appendChild(item);
+  });
   el._nominatimData = results;
   el.style.display = 'block';
 }
