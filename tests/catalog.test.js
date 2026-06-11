@@ -26,7 +26,8 @@ for (const rel of [
   'js/data/ratings.js',
   'js/catalog/meta.js',
   'js/catalog/search.js',
-  'js/catalog/scoring.js'
+  'js/catalog/scoring.js',
+  'js/catalog/filter.js'
 ]) {
   vm.runInContext(fs.readFileSync(path.join(ROOT, rel), 'utf8'), sandbox, { filename: rel });
 }
@@ -93,4 +94,27 @@ test('summer gaps remain searchable via curated aliases', () => {
   assert.equal(result.witchsBroom, true);
   assert.equal(result.iris, true);
   assert.equal(result.pelican, true);
+});
+
+test('dynamic catalog merge preserves fallback aliases for search', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK.map(o => {
+      if (o.id !== 'NGC6960') return o;
+      const clone = { ...o };
+      delete clone.aliases;
+      return clone;
+    });
+    updateCatalogTopNList();
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const merged = getCatalogById()['NGC6960'];
+      return {
+        hasAlias: Array.isArray(merged.aliases) && merged.aliases.includes('Sh2-103'),
+        matchesAlias: objectMatchesSearch(merged, 'Sh2-103')
+      };
+    })()
+  `);
+  assert.equal(result.hasAlias, true);
+  assert.equal(result.matchesAlias, true);
 });

@@ -35,9 +35,22 @@ function syncFilterButtons(activeFilter, clickedEl){
   if(clickedEl && !clickedEl.dataset.filter) clickedEl.classList.add('active');
 }
 
+function mergeCatalogEntry(base, live){
+  if(!base) return live;
+  if(!live) return base;
+  const aliases=[...new Set([...(base.aliases||[]), ...(live.aliases||[])])];
+  return {
+    ...base,
+    ...live,
+    aliases: aliases.length ? aliases : undefined,
+  };
+}
+
 function getCatalogById(){
   const byId={};
-  CATALOG.forEach(o=>{ byId[o.id]=o; });
+  CATALOG_FALLBACK.forEach(o=>{ byId[o.id]=o; });
+  CATALOG_TOPN_LIST.forEach(o=>{ byId[o.id]=mergeCatalogEntry(byId[o.id], o); });
+  CATALOG.forEach(o=>{ byId[o.id]=mergeCatalogEntry(byId[o.id], o); });
   return byId;
 }
 
