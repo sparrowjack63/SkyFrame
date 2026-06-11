@@ -53,9 +53,11 @@ function buildTopNList(){
   // Couche 1 — socle garanti : objets de CATALOG_FALLBACK présents dans CUSTOM_META
   // Utilise les IDs corrects du fallback (ex: "M65" plutôt que "NGC3623")
   // Enrichit avec les données live d'OpenNGC si disponibles (ra/dec/size/score à jour)
-  const customIds = new Set(Object.keys(CUSTOM_META));
+  // Curated fallback entries should survive score cutoffs even when their
+  // editorial note lives in RATINGS instead of CUSTOM_META.
+  const curatedIds = new Set([...Object.keys(CUSTOM_META), ...Object.keys(RATINGS)]);
   const baseLayer = CATALOG_FALLBACK
-    .filter(o => customIds.has(o.id))
+    .filter(o => curatedIds.has(o.id))
     .map(o => {
       const live = catalogById[o.id];
       const base = live ? {...o, ...live, id: o.id, name: o.name} : {...o};
