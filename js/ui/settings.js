@@ -112,6 +112,7 @@ function showPage(name){
   if(name==='chart'){setTimeout(drawChart,50);}
   if(name==='planner') renderPlanner();
   if(name==='targets') renderTargets();
+  if(name==='suggestions') renderSuggestions();
 }
 
 function showToast(m){

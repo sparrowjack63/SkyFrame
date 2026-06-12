@@ -163,6 +163,7 @@ window.addEventListener('load', async () => {
   setZoom('all');
   syncFilterButtons(currentFilter);
   renderTargets();
+  if (currentPage === 'suggestions') renderSuggestions();
   renderCatalogStatsPanel();
 
   setInterval(() => {
@@ -184,6 +185,7 @@ window.addEventListener('load', async () => {
       updateCatalogTopNList();
       renderCatalogStatsPanel();
       renderTargets();
+      if (currentPage === 'suggestions') renderSuggestions();
       if (currentPage === 'chart') drawChart();
     }
   });

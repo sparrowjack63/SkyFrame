@@ -38,6 +38,7 @@
     </div>
     <div class="tabs">
       <div class="tab active" onclick="showPage('targets')" id="tab-targets">🎯 <span data-i18n="nav.targets">Cibles</span></div>
+      <div class="tab" onclick="showPage('suggestions')" id="tab-suggestions">🏆 <span data-i18n="nav.suggestions">Suggestions</span></div>
       <div class="tab" onclick="showPage('chart')" id="tab-chart">📈 <span data-i18n="nav.chart">Courbes</span></div>
       <div class="tab" onclick="showPage('planner')" id="tab-planner">🗓️ <span data-i18n="nav.planner">Planification</span></div>
       <div class="tab" onclick="showPage('settings')" id="tab-settings">⚙️ <span data-i18n="nav.settings">Config</span></div>
@@ -145,6 +146,50 @@
 
       <div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;" id="count-label"></div>
       <div class="objects-grid" id="objects-grid"></div>
+    </div>
+
+    <!-- SUGGESTIONS -->
+    <div class="page" id="page-suggestions">
+      <div class="suggestion-toolbar">
+        <div class="suggestion-toolbar-copy">
+          <div class="suggestion-kicker" data-i18n="suggestions.kicker">Classement éditorial</div>
+          <div class="suggestion-title" data-i18n="suggestions.title">Meilleurs objets à viser</div>
+          <div class="suggestion-subtitle" data-i18n="suggestions.subtitle">Triés par note éditoriale puis score catalogue, avec aperçu image et sortie AstroBin.</div>
+        </div>
+        <div class="suggestion-topn-box">
+          <div class="suggestion-topn-label" data-i18n="suggestions.topNLabel">Objets affichés</div>
+          <div class="suggestion-topn-controls">
+            <button class="time-btn" type="button" onclick="stepSuggestionTopN(-10)">−10</button>
+            <input class="settings-input suggestion-topn-input" id="suggestion-top-n-input" type="number" min="10" max="300" step="10" value="100" onchange="setSuggestionTopN(this.value)">
+            <button class="time-btn" type="button" onclick="stepSuggestionTopN(10)">+10</button>
+          </div>
+          <div class="suggestion-sort-wrap">
+            <div class="suggestion-topn-label" data-i18n="suggestions.sortLabel">Tri</div>
+            <select class="settings-select suggestion-sort-select" id="suggestion-sort-select" onchange="setSuggestionSort(this.value)">
+              <option value="editorial" data-i18n="suggestions.sort.editorial">Note éditoriale</option>
+              <option value="time" data-i18n="suggestions.sort.time">Temps exploitable</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <button class="mobile-filter-toggle" id="mobile-filter-toggle-suggestions" onclick="toggleMobileFilters('suggestions')">
+        <span class="mft-label" data-i18n="shell.filters">Filtres</span>
+        <span class="mft-active" id="mft-active-suggestions">Tous</span>
+        <span class="mft-arrow">▾</span>
+      </button>
+      <div class="filters-panel" id="filters-panel-suggestions">
+        <div class="filters-bar">
+          <div class="filter-btn active" data-suggestion-filter="all" onclick="setSuggestionFilter('all',this)"><span data-i18n="filter.all">Tous</span></div>
+          <div class="filter-btn" data-suggestion-filter="nebula" onclick="setSuggestionFilter('nebula',this)">🌹 <span data-i18n="filter.nebulaPlural">Nébuleuses</span></div>
+          <div class="filter-btn" data-suggestion-filter="galaxy" onclick="setSuggestionFilter('galaxy',this)">🌀 <span data-i18n="filter.galaxyPlural">Galaxies</span></div>
+          <div class="filter-btn" data-suggestion-filter="cluster" onclick="setSuggestionFilter('cluster',this)">✨ <span data-i18n="filter.clusterPlural">Amas</span></div>
+          <div class="filter-btn" data-suggestion-filter="planetary" onclick="setSuggestionFilter('planetary',this)">💛 <span data-i18n="filter.planetaryShort">Planét.</span></div>
+          <div class="filter-btn" data-suggestion-filter="snr" onclick="setSuggestionFilter('snr',this)">💥 <span data-i18n="filter.snr">SNR</span></div>
+          <div class="filter-btn" data-suggestion-filter="composition" onclick="setSuggestionFilter('composition',this)">🧩 <span data-i18n="filter.compositionPlural">Compositions</span></div>
+        </div>
+      </div>
+      <div class="suggestion-summary" id="suggestion-count-label"></div>
+      <div class="suggestion-grid" id="suggestion-grid"></div>
     </div>
 
     <!-- COURBES -->
@@ -785,6 +830,7 @@
 
   <nav>
     <button class="nav-btn active" onclick="showPage('targets')" id="nav-targets"><span class="icon">🎯</span><span data-i18n="nav.targets">Cibles</span></button>
+    <button class="nav-btn" onclick="showPage('suggestions')" id="nav-suggestions"><span class="icon">🏆</span><span data-i18n="nav.suggestions">Suggestions</span></button>
     <button class="nav-btn" onclick="showPage('chart')" id="nav-chart"><span class="icon">📈</span><span data-i18n="nav.chart">Courbes</span></button>
     <button class="nav-btn" onclick="showPage('planner')" id="nav-planner"><span class="icon">🗓️</span><span data-i18n="nav.planner">Planification</span></button>
     <button class="nav-btn" onclick="showPage('settings')" id="nav-settings"><span class="icon">⚙️</span><span data-i18n="nav.settings">Config</span></button>
@@ -825,6 +871,7 @@
 <script src="./js/catalog/scoring.js"></script>
 <script src="./js/ui/clock.js"></script>
 <script src="./js/ui/targets.js"></script>
+<script src="./js/ui/suggestions.js"></script>
 <script src="./js/ui/modal.js"></script>
 <script src="./js/ui/settings.js"></script>
 <script src="./js/chart/render.js"></script>
