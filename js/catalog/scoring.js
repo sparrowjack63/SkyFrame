@@ -160,6 +160,7 @@ function areSuggestionDuplicates(a, b){
 }
 
 function getSuggestionCompanionIds(o){
+  if(o && o._companionIds) return o._companionIds;
   return new Set(parseCompanions(getRating(o.id)?.comp || o?.suggestionRating?.comp || CUSTOM_META[o.id]?.rating?.comp));
 }
 
@@ -178,7 +179,7 @@ function getSuggestionParentRadiusDeg(o){
 
 function isSuggestionSubobjectOf(parent, child){
   if(!parent || !child || parent.id===child.id) return false;
-  const groupMembers = new Set([...(parent.groupMembers || []), ...(parent.suggestionGroupMembers || [])]);
+  const groupMembers = parent._groupMembersSet || new Set([...(parent.groupMembers || []), ...(parent.suggestionGroupMembers || [])]);
   if(groupMembers.has(child.id)) return true;
   const sep=getSuggestionAngularSeparationDeg(parent, child);
   const parentRadius=getSuggestionParentRadiusDeg(parent);
@@ -216,12 +217,16 @@ function getSuggestionCandidates(options){
   const baseRanked = source
     .map(o => {
       const rt=getRating(o.id);
+      const sgm=o.groupMembers || (CUSTOM_META[o.id] && CUSTOM_META[o.id].groupMembers) || null;
+      const gmSrc=[...(o.groupMembers||[]),...(sgm||[])];
       return {
         ...o,
         score: calcScore(o).total,
         suggestionStars: rt.stars || 0,
         suggestionRating: rt,
-        suggestionGroupMembers: o.groupMembers || (CUSTOM_META[o.id] && CUSTOM_META[o.id].groupMembers) || null
+        suggestionGroupMembers: sgm,
+        _companionIds: new Set(parseCompanions(rt?.comp)),
+        _groupMembersSet: gmSrc.length ? new Set(gmSrc) : null,
       };
     })
     .sort(compareEditorialSuggestions);

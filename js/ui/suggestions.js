@@ -110,7 +110,7 @@ function renderSuggestions(){
   }
 
   grid.innerHTML=suggestions.map((o,index) => {
-    const rt=getRating(o.id);
+    const rt=o.suggestionRating || getRating(o.id);
     const astroBinUrl=getAstroBinSearchUrl(o);
     const imageUrl=getSuggestionImageUrl(o);
     const rec=recFilter(o, mp.ill);
