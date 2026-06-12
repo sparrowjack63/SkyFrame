@@ -14,6 +14,7 @@ SkyFrame helps astrophotographers plan their sessions by showing which targets a
 ## Features
 
 - **Targets** — catalog of deep-sky objects + planets, with 1–5★ editorial ratings for your field of view
+- **Suggestions** — ranked nightly picks with image previews, AstroBin shortcut, family filters, and sort by editorial rating or usable time
 - **Curves** — altitude vs. time chart with twilight gradient, moonlight overlay, and "lights off" zone
 - **Planner** — session planning with exportable list and night timeline
 - **Config** — site profile, instrument, and horizon constraint setup
@@ -23,6 +24,7 @@ SkyFrame helps astrophotographers plan their sessions by showing which targets a
 - OpenNGC catalog integration (dynamic, cached 7 days) with ~500 scored objects + static fallback
 - Night / Dim / Day themes
 - No build step, no backend — a single static page with local caching
+- Suggestion de-duplication across aliases, same-field companions, and obvious parent/sub-object cases (for example `M33` vs `NGC588`)
 
 ---
 
@@ -76,9 +78,13 @@ skyframe/
 │   │   └── hover.js        # Hover interaction and tooltip
 │   ├── ui/                 # UI components
 │   │   ├── targets.js      # Target grid rendering
+│   │   ├── suggestions.js  # Ranked nightly suggestions gallery
 │   │   ├── modal.js        # Object detail modal
 │   │   ├── clock.js        # Night slider and clock
 │   │   └── settings.js     # Settings page
+│   ├── i18n/               # Locale registry and translations
+│   │   ├── core.js         # Translation runtime
+│   │   └── locales/        # French + English UI strings
 │   └── planner/            # Session planner
 │       ├── core.js         # Planning windows, light segments, timeline
 │       └── render.js       # Planner rendering
@@ -94,11 +100,19 @@ skyframe/
 
 ## Tests
 
-Unit tests cover the astronomical calculations (`js/astro/*`) and the HTML-escaping helpers. They use the built-in Node.js test runner — no dependency to install (Node ≥ 18):
+Unit tests cover the astronomical calculations, catalog loading/search/scoring, suggestion ranking, and HTML-escaping helpers. They use the built-in Node.js test runner — no dependency to install (Node ≥ 18):
 
 ```bash
+node --test tests/catalog.test.js
 node --test tests/astro.test.js
 ```
+
+Recent regression coverage specifically protects:
+
+- search aliases and canonical IDs
+- suggestion sorting by usable time
+- de-duplication of same-field equivalents
+- parent/sub-object collapse across cross-family filters (for example `M33` hiding `IC131` / `NGC588`)
 
 ---
 
