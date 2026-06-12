@@ -4,6 +4,7 @@ function getSuggestionStorageValue(key){
 
 let currentSuggestionFilter = getSuggestionStorageValue('suggestion_filter') || 'all';
 let SUGGESTION_TOP_N = parseInt(getSuggestionStorageValue('suggestion_top_n') || '100', 10);
+let currentSuggestionSort = getSuggestionStorageValue('suggestion_sort') || 'editorial';
 if(!Number.isFinite(SUGGESTION_TOP_N) || SUGGESTION_TOP_N < 10) SUGGESTION_TOP_N = 100;
 
 function skyFrameSuggestionsTranslate(key, params){
@@ -19,6 +20,7 @@ function clampSuggestionTopN(value){
 function persistSuggestionState(){
   try{ localStorage.setItem('suggestion_filter', currentSuggestionFilter); }catch(e){}
   try{ localStorage.setItem('suggestion_top_n', String(SUGGESTION_TOP_N)); }catch(e){}
+  try{ localStorage.setItem('suggestion_sort', currentSuggestionSort); }catch(e){}
 }
 
 function syncSuggestionFilterButtons(){
@@ -35,6 +37,14 @@ function setSuggestionFilter(filter){
   currentSuggestionFilter=filter;
   persistSuggestionState();
   syncSuggestionFilterButtons();
+  renderSuggestions();
+}
+
+function setSuggestionSort(sort){
+  currentSuggestionSort=(sort==='time') ? 'time' : 'editorial';
+  const select=document.getElementById('suggestion-sort-select');
+  if(select) select.value=currentSuggestionSort;
+  persistSuggestionState();
   renderSuggestions();
 }
 
@@ -61,25 +71,37 @@ function renderSuggestionFact(value){
   return `<span class="suggestion-fact">${escapeHtml(value)}</span>`;
 }
 
+function formatSuggestionDuration(mins){
+  if(typeof formatDurationMinutes === 'function') return formatDurationMinutes(mins);
+  if(!isFinite(mins)||mins<=0) return '0 min';
+  const h=Math.floor(mins/60), m=Math.round(mins%60);
+  if(h&&m) return `${h}h${String(m).padStart(2,'0')}`;
+  if(h) return `${h}h00`;
+  return `${m} min`;
+}
+
 function renderSuggestions(){
   const grid=document.getElementById('suggestion-grid');
   const count=document.getElementById('suggestion-count-label');
   const input=document.getElementById('suggestion-top-n-input');
+  const sortSelect=document.getElementById('suggestion-sort-select');
   if(!grid || !count) return;
   if(input) input.value=String(SUGGESTION_TOP_N);
+  if(sortSelect) sortSelect.value=currentSuggestionSort;
 
   updateClock();
   const t=getViewTime();
   const lstD=lst(jd(t),S.lon);
   const mp=moon(t);
-  const suggestions=getSuggestionCandidates({ filter: currentSuggestionFilter, limit: SUGGESTION_TOP_N })
+  const suggestions=getSuggestionCandidates({ filter: currentSuggestionFilter, limit: SUGGESTION_TOP_N, sortBy: currentSuggestionSort })
     .map(o => withComputedState(o, lstD, mp));
 
   syncSuggestionFilterButtons();
   count.textContent=skyFrameSuggestionsTranslate('suggestions.count', {
     count: suggestions.length,
     limit: SUGGESTION_TOP_N,
-    filter: skyFrameSuggestionsTranslate(`suggestions.filter.${currentSuggestionFilter}`)
+    filter: skyFrameSuggestionsTranslate(`suggestions.filter.${currentSuggestionFilter}`),
+    sort: skyFrameSuggestionsTranslate(`suggestions.sort.${currentSuggestionSort}`)
   });
 
   if(!suggestions.length){
@@ -93,18 +115,27 @@ function renderSuggestions(){
     const imageUrl=getSuggestionImageUrl(o);
     const rec=recFilter(o, mp.ill);
     const safeId=escapeJsAttr(o.id);
+    const windowInfo=o.suggestionWindow || null;
+    const usableMinutes=windowInfo && windowInfo.isSchedulable ? windowInfo.usableMinutes : 0;
+    const exposureCount=windowInfo && windowInfo.isSchedulable ? windowInfo.exposures : 0;
+    const usableLabel=formatSuggestionDuration(usableMinutes);
     const facts=[
       `${TYPE_LABEL[o.type] || o.type}`,
       `${o.size}'`,
       `${skyFrameSuggestionsTranslate('suggestions.scoreShort')} ${o.score}`,
       `${skyFrameSuggestionsTranslate('suggestions.altShort')} ${Math.round(o.alt)}°`,
+      `${skyFrameSuggestionsTranslate('suggestions.exposureShort')} ${usableLabel}`,
+      `${skyFrameSuggestionsTranslate('suggestions.subsShort')} ${exposureCount}`,
       rec.name
     ];
     return `<article class="suggestion-card">
       <div class="suggestion-thumb ${imageUrl?'':'suggestion-thumb-fallback'}">
         ${imageUrl?`<img src="${imageUrl}" alt="${escapeHtml(formatDisplayName(o))}" loading="lazy" referrerpolicy="no-referrer" onerror="handleSuggestionImageError(this)">`:''}
         <div class="suggestion-thumb-label">
-          <div class="suggestion-rank">#${index+1} · ${rt.tag || skyFrameSuggestionsTranslate('rating.tag.none')}</div>
+          <div>
+            <span class="suggestion-rank">#${index+1} · ${rt.tag || skyFrameSuggestionsTranslate('rating.tag.none')}</span>
+            <span class="suggestion-time-chip">${skyFrameSuggestionsTranslate('suggestions.tonightShort')} ${usableLabel}</span>
+          </div>
           <div class="suggestion-thumb-name">${escapeHtml(formatDisplayName(o))}</div>
           <div class="suggestion-thumb-sub">${escapeHtml(o.cat)} · ${escapeHtml(TYPE_LABEL[o.type] || o.type)}</div>
         </div>
@@ -123,6 +154,7 @@ function renderSuggestions(){
             <div class="suggestion-score-sub">${skyFrameSuggestionsTranslate('suggestions.scoreLabel')}</div>
           </div>
         </div>
+        <div class="suggestion-window-line">${skyFrameSuggestionsTranslate('suggestions.windowLine', { duration: usableLabel, exposures: exposureCount, count: exposureCount })}</div>
         <div class="suggestion-desc">${escapeHtml(rt.reason || o.desc || skyFrameSuggestionsTranslate('rating.reason.unrated'))}</div>
         <div class="suggestion-facts">${facts.map(renderSuggestionFact).join('')}</div>
         <div class="suggestion-actions">

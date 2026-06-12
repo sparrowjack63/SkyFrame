@@ -163,6 +163,13 @@
             <input class="settings-input suggestion-topn-input" id="suggestion-top-n-input" type="number" min="10" max="300" step="10" value="100" onchange="setSuggestionTopN(this.value)">
             <button class="time-btn" type="button" onclick="stepSuggestionTopN(10)">+10</button>
           </div>
+          <div class="suggestion-sort-wrap">
+            <div class="suggestion-topn-label" data-i18n="suggestions.sortLabel">Tri</div>
+            <select class="settings-select suggestion-sort-select" id="suggestion-sort-select" onchange="setSuggestionSort(this.value)">
+              <option value="editorial" data-i18n="suggestions.sort.editorial">Note éditoriale</option>
+              <option value="time" data-i18n="suggestions.sort.time">Temps exploitable</option>
+            </select>
+          </div>
         </div>
       </div>
       <button class="mobile-filter-toggle" id="mobile-filter-toggle-suggestions" onclick="toggleMobileFilters('suggestions')">

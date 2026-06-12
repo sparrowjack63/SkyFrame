@@ -163,6 +163,7 @@ function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
   const limit=Number.isFinite(Number(opts.limit)) ? Math.max(0, Number(opts.limit)) : 100;
+  const sortBy=opts.sortBy || 'editorial';
   const accessibleOnly=opts.onlyAccessible !== false;
   const nightBounds=(accessibleOnly && typeof getOrComputeNightBounds==='function') ? getOrComputeNightBounds() : null;
   const byId={};
@@ -176,12 +177,20 @@ function getSuggestionCandidates(options){
         ...o,
         score: calcScore(o).total,
         suggestionStars: rt.stars || 0,
-        suggestionRating: rt
+        suggestionRating: rt,
+        suggestionWindow: (nightBounds && typeof getPlanningWindowForObject==='function')
+          ? getPlanningWindowForObject(o, nightBounds)
+          : null
       };
     })
     .filter(o => !accessibleOnly || (nightBounds && isAccessibleAtAnyNightMoment(o, nightBounds)))
     .filter(o => matchesSuggestionFilter(o, filter))
     .sort((a,b) => {
+      if(sortBy==='time'){
+        const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
+        const usableB=b.suggestionWindow && b.suggestionWindow.isSchedulable ? b.suggestionWindow.usableMinutes : 0;
+        if(usableB!==usableA) return usableB-usableA;
+      }
       if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);
       if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
       if((b.size||0)!==(a.size||0)) return (b.size||0)-(a.size||0);

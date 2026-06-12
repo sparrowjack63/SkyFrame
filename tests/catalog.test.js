@@ -240,3 +240,28 @@ test('suggestions collapse same-field companion duplicates like North America/Pe
   assert.equal(result.veilPairCount, 1);
   assert.equal(result.keepsHeartAndSoulSeparate, true);
 });
+
+test('suggestions can sort by usable night time', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK;
+    updateCatalogTopNList();
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+    getPlanningWindowForObject = o => ({
+      isSchedulable: true,
+      usableMinutes: o.id === 'NGC7000' ? 240 : (o.id === 'IC5070' ? 120 : 30),
+      exposures: o.id === 'NGC7000' ? 48 : (o.id === 'IC5070' ? 24 : 6)
+    });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const top = getSuggestionCandidates({ limit: 5, sortBy: 'time' }).map(o => o.id);
+      return {
+        first: top[0],
+        includesNorthAmerica: top.includes('NGC7000')
+      };
+    })()
+  `);
+  assert.equal(result.first, 'NGC7000');
+  assert.equal(result.includesNorthAmerica, true);
+});
