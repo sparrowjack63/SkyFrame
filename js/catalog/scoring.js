@@ -243,6 +243,15 @@ function compareEditorialSuggestions(a, b){
   return (a.mag ?? 99) - (b.mag ?? 99);
 }
 
+function dedupeSuggestionList(ranked){
+  const deduped=[];
+  for(const o of ranked){
+    if(deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
+    deduped.push(o);
+  }
+  return deduped;
+}
+
 function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
@@ -269,12 +278,14 @@ function getSuggestionCandidates(options){
     .sort(compareEditorialSuggestions);
 
   const ranked = (sortBy==='time' && nightBounds && typeof getPlanningWindowForObject==='function')
-    ? baseRanked
-      .map(o => ({
-        ...o,
-        suggestionWindow: getPlanningWindowForObject(o, nightBounds)
-      }))
-      .filter(o => !accessibleOnly || (o.suggestionWindow && o.suggestionWindow.isSchedulable))
+    ? dedupeSuggestionList(
+        baseRanked
+        .map(o => ({
+          ...o,
+          suggestionWindow: getPlanningWindowForObject(o, nightBounds)
+        }))
+        .filter(o => !accessibleOnly || (o.suggestionWindow && o.suggestionWindow.isSchedulable))
+      )
       .sort((a,b) => {
         const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
         const usableB=b.suggestionWindow && b.suggestionWindow.isSchedulable ? b.suggestionWindow.usableMinutes : 0;
@@ -286,8 +297,8 @@ function getSuggestionCandidates(options){
   const filtered=[];
   for(const o of ranked){
     if(sortBy!=='time' && accessibleOnly && (!nightBounds || !isAccessibleAtAnyNightMoment(o, nightBounds))) continue;
-    if(deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
-    deduped.push(o);
+    if(sortBy!=='time' && deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
+    if(sortBy!=='time') deduped.push(o);
     if(matchesSuggestionFilter(o, filter)){
       filtered.push(o);
       if(filtered.length >= limit) break;

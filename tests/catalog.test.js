@@ -384,6 +384,33 @@ test('suggestion family filters still exclude sub-objects when the parent is ano
   assert.equal(result.has604, false);
 });
 
+test('time-sorted family filters still collapse schedulable sub-objects behind their parent representative', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK.concat([
+      { id:'M33', name:'M33 — Triangle', cat:'Messier', type:'galaxy', ra:23.46, dec:30.66, mag:5.7, size:73, filter:'rgb', emission:false, desc:'Galaxie spirale.' },
+      { id:'IC131', name:'IC131', cat:'IC', type:'nebula', ra:23.3108, dec:30.7533, mag:12, size:0.3, filter:'rgb', emission:false, desc:'Région HII de M33.' },
+      { id:'NGC588', name:'NGC588', cat:'NGC', type:'nebula', ra:23.1914, dec:30.6475, mag:12, size:0.6, filter:'rgb', emission:false, desc:'Région HII de M33.' }
+    ]);
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    getPlanningWindowForObject = o => {
+      if (o.id === 'M33') return { isSchedulable: true, usableMinutes: 35, exposures: 7 };
+      if (o.id === 'IC131' || o.id === 'NGC588') return { isSchedulable: true, usableMinutes: 40, exposures: 8 };
+      return { isSchedulable: true, usableMinutes: 10, exposures: 2 };
+    };
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ filter:'nebula', sortBy:'time', limit: 200 }).map(o => o.id);
+      return {
+        has131: ids.includes('IC131'),
+        has588: ids.includes('NGC588')
+      };
+    })()
+  `);
+  assert.equal(result.has131, false);
+  assert.equal(result.has588, false);
+});
+
 test('cluster parents can suppress embedded reflection nebulosity like M45 companions', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK.concat([
