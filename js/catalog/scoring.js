@@ -223,6 +223,7 @@ function getSuggestionCandidates(options){
       return (a.mag ?? 99) - (b.mag ?? 99);
     });
   const deduped=[];
+  const filtered=[];
   for(const o of ranked){
     if(deduped.some(existing =>
       areSuggestionDuplicates(existing, o)
@@ -230,8 +231,10 @@ function getSuggestionCandidates(options){
       || isSuggestionSubobjectOf(existing, o)
     )) continue;
     deduped.push(o);
+    if(matchesSuggestionFilter(o, filter)){
+      filtered.push(o);
+      if(filtered.length >= limit) break;
+    }
   }
-  return deduped
-    .filter(o => matchesSuggestionFilter(o, filter))
-    .slice(0, limit);
+  return filtered;
 }
