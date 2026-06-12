@@ -124,6 +124,28 @@ function matchesSuggestionFilter(o, filter){
   return family===filter;
 }
 
+function getSuggestionAngularSeparationDeg(a, b){
+  const degToRad=value => Number(value) * Math.PI / 180;
+  const radToDeg=value => value * 180 / Math.PI;
+  const ra1=degToRad(a.ra);
+  const dec1=degToRad(a.dec);
+  const ra2=degToRad(b.ra);
+  const dec2=degToRad(b.dec);
+  if(!Number.isFinite(ra1) || !Number.isFinite(dec1) || !Number.isFinite(ra2) || !Number.isFinite(dec2)) return Infinity;
+  const cosSep=Math.sin(dec1)*Math.sin(dec2) + Math.cos(dec1)*Math.cos(dec2)*Math.cos(ra1-ra2);
+  return radToDeg(Math.acos(Math.max(-1, Math.min(1, cosSep))));
+}
+
+function areSuggestionDuplicates(a, b){
+  if(!a || !b || a.id===b.id) return false;
+  if(a.type!==b.type) return false;
+  const sizeA=Number(a.size) || 0;
+  const sizeB=Number(b.size) || 0;
+  const maxSize=Math.max(sizeA, sizeB, 1);
+  const sizeGap=Math.abs(sizeA-sizeB)/maxSize;
+  return getSuggestionAngularSeparationDeg(a,b) <= 0.15 && sizeGap <= 0.25;
+}
+
 function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
@@ -133,7 +155,7 @@ function getSuggestionCandidates(options){
   const byId={};
   CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
   CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
-  return Object.values(byId)
+  const ranked = Object.values(byId)
     .filter(o => o && o.cat!=='Planet')
     .map(o => {
       const rt=getRating(o.id);
@@ -151,6 +173,12 @@ function getSuggestionCandidates(options){
       if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
       if((b.size||0)!==(a.size||0)) return (b.size||0)-(a.size||0);
       return (a.mag ?? 99) - (b.mag ?? 99);
-    })
-    .slice(0, limit);
+    });
+  const deduped=[];
+  for(const o of ranked){
+    if(deduped.some(existing => areSuggestionDuplicates(existing, o))) continue;
+    deduped.push(o);
+    if(deduped.length >= limit) break;
+  }
+  return deduped;
 }

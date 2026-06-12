@@ -196,3 +196,25 @@ test('suggestion image URL uses CDS HiPS cutouts when coordinates exist', () => 
   assert.equal(result.hasCoords, true);
   assert.equal(result.nullWhenMissing, true);
 });
+
+test('suggestions dedupe alternate catalog entries for the same target', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK;
+    updateCatalogTopNList();
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 200 }).map(o => o.id);
+      return {
+        hasNgc7635: ids.includes('NGC7635'),
+        hasSh2162: ids.includes('Sh2-162'),
+        count: ids.filter(id => id === 'NGC7635' || id === 'Sh2-162').length
+      };
+    })()
+  `);
+  assert.equal(result.hasNgc7635, true);
+  assert.equal(result.hasSh2162, false);
+  assert.equal(result.count, 1);
+});
