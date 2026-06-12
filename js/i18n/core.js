@@ -37,6 +37,18 @@
     });
   }
 
+  function hasLocale(lang) {
+    return !!LOCALES[lang];
+  }
+
+  function emitLanguageChange() {
+    if (global.document) {
+      global.document.dispatchEvent(new CustomEvent('skyframe:languagechange', {
+        detail: { language: currentLanguage }
+      }));
+    }
+  }
+
   function interpolate(template, params) {
     if (!params) return template;
     return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, function(match, key) {
@@ -81,10 +93,8 @@
     updateDocumentLanguage(normalized);
     updateLanguageButtons();
 
-    if (global.document) {
-      global.document.dispatchEvent(new CustomEvent('skyframe:languagechange', {
-        detail: { language: normalized }
-      }));
+    if (hasLocale(normalized)) {
+      emitLanguageChange();
     }
 
     return currentLanguage;
@@ -98,6 +108,9 @@
     if (global.document && (normalized === currentLanguage || normalized === DEFAULT_LANGUAGE)) {
       applyTranslations();
       updateLanguageButtons();
+      if (normalized === currentLanguage) {
+        emitLanguageChange();
+      }
     }
   }
 
