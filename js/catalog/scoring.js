@@ -128,6 +128,8 @@ function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
   const limit=Number.isFinite(Number(opts.limit)) ? Math.max(0, Number(opts.limit)) : 100;
+  const accessibleOnly=opts.onlyAccessible !== false;
+  const nightBounds=(accessibleOnly && typeof getOrComputeNightBounds==='function') ? getOrComputeNightBounds() : null;
   const byId={};
   CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
   CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
@@ -142,6 +144,7 @@ function getSuggestionCandidates(options){
         suggestionRating: rt
       };
     })
+    .filter(o => !accessibleOnly || (nightBounds && isAccessibleAtAnyNightMoment(o, nightBounds)))
     .filter(o => matchesSuggestionFilter(o, filter))
     .sort((a,b) => {
       if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);

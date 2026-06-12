@@ -153,7 +153,12 @@ test('dynamic catalog merge preserves fallback aliases for search', () => {
 });
 
 test('suggestion ranking keeps editorial 5-star entries at the top and filters by family', () => {
-  vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK;
+    updateCatalogTopNList();
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = o => o.id !== 'M42';
+  `, sandbox);
   const result = sf(`
     (() => {
       const top = getSuggestionCandidates({ limit: 12 }).map(o => ({ id: o.id, stars: o.suggestionStars }));
@@ -162,12 +167,14 @@ test('suggestion ranking keeps editorial 5-star entries at the top and filters b
       return {
         top,
         topAreFiveStars: top.every(o => o.stars === 5),
+        excludedInaccessible: !top.some(o => o.id === 'M42'),
         galaxyOnly: galaxies.every(o => getSuggestionFamily(o) === 'galaxy'),
         compositionOnly: compositions.every(o => getSuggestionFamily(o) === 'composition')
       };
     })()
   `);
   assert.equal(result.topAreFiveStars, true);
+  assert.equal(result.excludedInaccessible, true);
   assert.equal(result.galaxyOnly, true);
   assert.equal(result.compositionOnly, true);
 });
