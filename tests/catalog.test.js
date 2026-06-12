@@ -288,3 +288,24 @@ test('suggestions drop sub-objects contained inside a larger parent object', () 
   assert.equal(result.hasParent, true);
   assert.equal(result.hasChild, false);
 });
+
+test('suggestion family filters still exclude sub-objects when the parent is another family', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK.concat([
+      { id:'M33', name:'M33 — Triangle', cat:'Messier', type:'galaxy', ra:23.46, dec:30.66, mag:5.7, size:73, filter:'rgb', emission:false, desc:'Galaxie spirale.' },
+      { id:'NGC588', name:'NGC588', cat:'NGC', type:'nebula', ra:23.1914, dec:30.6475, mag:12, size:0.6, filter:'rgb', emission:false, desc:'Région HII de M33.' }
+    ]);
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+    getPlanningWindowForObject = () => ({ isSchedulable: true, usableMinutes: 60, exposures: 12 });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ filter:'nebula', limit: 200, onlyAccessible: false }).map(o => o.id);
+      return {
+        hasChild: ids.includes('NGC588')
+      };
+    })()
+  `);
+  assert.equal(result.hasChild, false);
+});

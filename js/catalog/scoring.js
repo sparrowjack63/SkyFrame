@@ -211,7 +211,6 @@ function getSuggestionCandidates(options){
       };
     })
     .filter(o => !accessibleOnly || (nightBounds && isAccessibleAtAnyNightMoment(o, nightBounds)))
-    .filter(o => matchesSuggestionFilter(o, filter))
     .sort((a,b) => {
       if(sortBy==='time'){
         const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
@@ -231,7 +230,8 @@ function getSuggestionCandidates(options){
       || isSuggestionSubobjectOf(existing, o)
     )) continue;
     deduped.push(o);
-    if(deduped.length >= limit) break;
   }
-  return deduped;
+  return deduped
+    .filter(o => matchesSuggestionFilter(o, filter))
+    .slice(0, limit);
 }
