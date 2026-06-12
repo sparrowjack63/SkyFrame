@@ -225,6 +225,10 @@ function isSuggestionDedupedBy(existing, o){
       if(sep<=containmentRadius && childSize<=parentSize*0.12) return true;
     } else if(existing.type==='nebula' && (o.type==='nebula'||o.type==='cluster')){
       if(sep<=parentRadius*0.75 && childSize<=parentSize*0.35) return true;
+    } else if(existing.type==='cluster' && o.type==='nebula'){
+      const childRadius=((childSize/60)/2);
+      const containmentRadius=Math.max(parentRadius*0.9, parentRadius + childRadius);
+      if(sep<=containmentRadius && childSize<=parentSize*0.4) return true;
     } else if(isCompositionEntry(existing)){
       if(sep<=Math.max(1.2,parentRadius*0.9) && childSize<=parentSize*0.4) return true;
     }

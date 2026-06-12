@@ -383,3 +383,55 @@ test('suggestion family filters still exclude sub-objects when the parent is ano
   assert.equal(result.has595, false);
   assert.equal(result.has604, false);
 });
+
+test('cluster parents can suppress embedded reflection nebulosity like M45 companions', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK.concat([
+      { id:'M45', name:'M45 — Pléiades', cat:'Messier', type:'cluster', ra:56.75, dec:24.12, mag:1.6, size:110, filter:'rgb', emission:false, desc:'Amas ouvert emblématique.' },
+      { id:'NGC1432', name:'NGC1432', cat:'NGC', type:'nebula', ra:56.87, dec:24.37, mag:10, size:35, filter:'rgb', emission:false, desc:'Nébulosité des Pléiades.' },
+      { id:'NGC1435', name:'NGC1435', cat:'NGC', type:'nebula', ra:56.74, dec:24.35, mag:10, size:30, filter:'rgb', emission:false, desc:'Nébulosité des Pléiades.' }
+    ]);
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+    getPlanningWindowForObject = () => ({ isSchedulable: true, usableMinutes: 60, exposures: 12 });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 200, onlyAccessible: false }).map(o => o.id);
+      return {
+        hasParent: ids.includes('M45'),
+        has1432: ids.includes('NGC1432'),
+        has1435: ids.includes('NGC1435')
+      };
+    })()
+  `);
+  assert.equal(result.hasParent, true);
+  assert.equal(result.has1432, false);
+  assert.equal(result.has1435, false);
+});
+
+test('M42 same-field companions collapse to the parent suggestion', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK.concat([
+      { id:'M42', name:'M42 — Nébuleuse d\\'Orion', cat:'Messier', type:'nebula', ra:83.82, dec:-5.39, mag:4.0, size:85, filter:'lextreme', emission:true, desc:'Grande nébuleuse d\\'Orion.' },
+      { id:'M43', name:'M43 — De Mairan', cat:'Messier', type:'nebula', ra:83.88, dec:-5.27, mag:9.0, size:20, filter:'lextreme', emission:true, desc:'Extension de M42.' },
+      { id:'NGC1977', name:'NGC1977 — Running Man', cat:'NGC', type:'nebula', ra:83.85, dec:-4.84, mag:8.0, size:40, filter:'lextreme', emission:true, desc:'Running Man près de M42.' }
+    ]);
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+    getPlanningWindowForObject = () => ({ isSchedulable: true, usableMinutes: 60, exposures: 12 });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 200, onlyAccessible: false }).map(o => o.id);
+      return {
+        hasM42: ids.includes('M42'),
+        hasM43: ids.includes('M43'),
+        has1977: ids.includes('NGC1977')
+      };
+    })()
+  `);
+  assert.equal(result.hasM42, true);
+  assert.equal(result.hasM43, false);
+  assert.equal(result.has1977, false);
+});
