@@ -159,6 +159,32 @@ function areSuggestionSameField(a, b){
   return getSuggestionAngularSeparationDeg(a,b) <= 2.6;
 }
 
+function getSuggestionParentRadiusDeg(o){
+  return Math.max(0.2, ((Number(o.size) || 0) / 60) / 2);
+}
+
+function isSuggestionSubobjectOf(parent, child){
+  if(!parent || !child || parent.id===child.id) return false;
+  const groupMembers = new Set([...(parent.groupMembers || []), ...(parent.suggestionGroupMembers || [])]);
+  if(groupMembers.has(child.id)) return true;
+  const sep=getSuggestionAngularSeparationDeg(parent, child);
+  const parentRadius=getSuggestionParentRadiusDeg(parent);
+  const childSize=Number(child.size) || 0;
+  const parentSize=Number(parent.size) || 0;
+  if(parentSize <= 0 || childSize <= 0) return false;
+
+  if(parent.type==='galaxy' && child.type!=='galaxy'){
+    return sep <= parentRadius * 0.8 && childSize <= parentSize * 0.12;
+  }
+  if(parent.type==='nebula' && (child.type==='nebula' || child.type==='cluster')){
+    return sep <= parentRadius * 0.75 && childSize <= parentSize * 0.35;
+  }
+  if(isCompositionEntry(parent)){
+    return sep <= Math.max(1.2, parentRadius * 0.9) && childSize <= parentSize * 0.4;
+  }
+  return false;
+}
+
 function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
@@ -178,6 +204,7 @@ function getSuggestionCandidates(options){
         score: calcScore(o).total,
         suggestionStars: rt.stars || 0,
         suggestionRating: rt,
+        suggestionGroupMembers: o.groupMembers || (CUSTOM_META[o.id] && CUSTOM_META[o.id].groupMembers) || null,
         suggestionWindow: (nightBounds && typeof getPlanningWindowForObject==='function')
           ? getPlanningWindowForObject(o, nightBounds)
           : null
@@ -198,7 +225,11 @@ function getSuggestionCandidates(options){
     });
   const deduped=[];
   for(const o of ranked){
-    if(deduped.some(existing => areSuggestionDuplicates(existing, o) || areSuggestionSameField(existing, o))) continue;
+    if(deduped.some(existing =>
+      areSuggestionDuplicates(existing, o)
+      || areSuggestionSameField(existing, o)
+      || isSuggestionSubobjectOf(existing, o)
+    )) continue;
     deduped.push(o);
     if(deduped.length >= limit) break;
   }
