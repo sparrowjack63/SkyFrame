@@ -88,8 +88,6 @@ function buildTopNList(){
     .sort((a, b) => b.score - a.score)
     .slice(0, slots);
 
-  const catalogVisibleById = {};
-  scored.forEach(o => { catalogVisibleById[o.id] = o; });
   const finalList = [...baseLayer, ...dynamicLayer];
   const finalIds = new Set(finalList.map(o => o.id));
   for(let i=0;i<finalList.length;i++){
@@ -98,7 +96,7 @@ function buildTopNList(){
     const companions = parseCompanions(rating?.comp || CUSTOM_META[o.id]?.rating?.comp);
     companions.forEach(cid=>{
       if(finalIds.has(cid)) return;
-      const companion = catalogVisibleById[cid];
+      const companion = catalogById[cid];
       if(!companion) return;
       finalList.push(companion);
       finalIds.add(cid);
@@ -199,6 +197,39 @@ function isSuggestionSubobjectOf(parent, child){
   return false;
 }
 
+function isSuggestionDedupedBy(existing, o){
+  // Group membership doesn't require angular separation — check first
+  if(existing._groupMembersSet && existing._groupMembersSet.has(o.id)) return true;
+  const sep=getSuggestionAngularSeparationDeg(existing, o);
+  // Duplicate: same type, very close, similar size
+  if(existing.type===o.type){
+    const sizeA=Number(existing.size)||0, sizeB=Number(o.size)||0;
+    if(sep<=0.15 && Math.abs(sizeA-sizeB)/Math.max(sizeA,sizeB,1)<=0.25) return true;
+  }
+  // Same field: companion-linked and angularly close
+  if(sep<=2.6){
+    const compA=getSuggestionCompanionIds(existing);
+    const compB=getSuggestionCompanionIds(o);
+    let linked=compA.has(o.id)||compB.has(existing.id);
+    if(!linked){ for(const id of compA){ if(compB.has(id)){ linked=true; break; } } }
+    if(linked) return true;
+  }
+  // Sub-object: positional containment inside a larger parent
+  const parentSize=Number(existing.size)||0;
+  const childSize=Number(o.size)||0;
+  if(parentSize>0 && childSize>0){
+    const parentRadius=getSuggestionParentRadiusDeg(existing);
+    if(existing.type==='galaxy' && o.type!=='galaxy'){
+      if(sep<=parentRadius*0.8 && childSize<=parentSize*0.12) return true;
+    } else if(existing.type==='nebula' && (o.type==='nebula'||o.type==='cluster')){
+      if(sep<=parentRadius*0.75 && childSize<=parentSize*0.35) return true;
+    } else if(isCompositionEntry(existing)){
+      if(sep<=Math.max(1.2,parentRadius*0.9) && childSize<=parentSize*0.4) return true;
+    }
+  }
+  return false;
+}
+
 function compareEditorialSuggestions(a, b){
   if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);
   if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
@@ -249,11 +280,7 @@ function getSuggestionCandidates(options){
   const filtered=[];
   for(const o of ranked){
     if(sortBy!=='time' && accessibleOnly && (!nightBounds || !isAccessibleAtAnyNightMoment(o, nightBounds))) continue;
-    if(deduped.some(existing =>
-      areSuggestionDuplicates(existing, o)
-      || areSuggestionSameField(existing, o)
-      || isSuggestionSubobjectOf(existing, o)
-    )) continue;
+    if(deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
     deduped.push(o);
     if(matchesSuggestionFilter(o, filter)){
       filtered.push(o);
