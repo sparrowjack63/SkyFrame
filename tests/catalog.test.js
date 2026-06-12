@@ -218,3 +218,25 @@ test('suggestions dedupe alternate catalog entries for the same target', () => {
   assert.equal(result.hasSh2162, false);
   assert.equal(result.count, 1);
 });
+
+test('suggestions collapse same-field companion duplicates like North America/Pelican and Veil pair', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK;
+    updateCatalogTopNList();
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 200 }).map(o => o.id);
+      return {
+        northAmericaPairCount: ids.filter(id => id === 'NGC7000' || id === 'IC5070').length,
+        veilPairCount: ids.filter(id => id === 'NGC6960' || id === 'NGC6992').length,
+        keepsHeartAndSoulSeparate: ids.includes('IC1805') && ids.includes('IC1848')
+      };
+    })()
+  `);
+  assert.equal(result.northAmericaPairCount, 1);
+  assert.equal(result.veilPairCount, 1);
+  assert.equal(result.keepsHeartAndSoulSeparate, true);
+});

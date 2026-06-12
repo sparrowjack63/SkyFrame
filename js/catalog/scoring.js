@@ -146,6 +146,19 @@ function areSuggestionDuplicates(a, b){
   return getSuggestionAngularSeparationDeg(a,b) <= 0.15 && sizeGap <= 0.25;
 }
 
+function getSuggestionCompanionIds(o){
+  return new Set(parseCompanions(getRating(o.id)?.comp || o?.suggestionRating?.comp || CUSTOM_META[o.id]?.rating?.comp));
+}
+
+function areSuggestionSameField(a, b){
+  if(!a || !b || a.id===b.id) return false;
+  const compA=getSuggestionCompanionIds(a);
+  const compB=getSuggestionCompanionIds(b);
+  const linked=compA.has(b.id) || compB.has(a.id) || [...compA].some(id => compB.has(id));
+  if(!linked) return false;
+  return getSuggestionAngularSeparationDeg(a,b) <= 2.6;
+}
+
 function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
@@ -176,7 +189,7 @@ function getSuggestionCandidates(options){
     });
   const deduped=[];
   for(const o of ranked){
-    if(deduped.some(existing => areSuggestionDuplicates(existing, o))) continue;
+    if(deduped.some(existing => areSuggestionDuplicates(existing, o) || areSuggestionSameField(existing, o))) continue;
     deduped.push(o);
     if(deduped.length >= limit) break;
   }
