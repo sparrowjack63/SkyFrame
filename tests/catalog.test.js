@@ -266,6 +266,62 @@ test('suggestions can sort by usable night time', () => {
   assert.equal(result.includesNorthAmerica, true);
 });
 
+test('editorial suggestions stop expensive accessibility/window checks once the limit is reached', () => {
+  vm.runInContext(`
+    __origGetMergedSuggestionSource = getMergedSuggestionSource;
+    var __suggestionSourceEditorial = [
+      { id:'A', name:'A', cat:'NGC', type:'nebula', ra:10, dec:20, mag:5, size:80, filter:'rgb', emission:false, desc:'' },
+      { id:'B', name:'B', cat:'NGC', type:'nebula', ra:20, dec:25, mag:6, size:70, filter:'rgb', emission:false, desc:'' },
+      { id:'C', name:'C', cat:'NGC', type:'nebula', ra:30, dec:30, mag:7, size:60, filter:'rgb', emission:false, desc:'' },
+      { id:'D', name:'D', cat:'NGC', type:'nebula', ra:40, dec:35, mag:8, size:50, filter:'rgb', emission:false, desc:'' }
+    ];
+    getMergedSuggestionSource = () => __suggestionSourceEditorial;
+    __accessChecks = 0;
+    __windowChecks = 0;
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => { __accessChecks += 1; return true; };
+    getPlanningWindowForObject = o => ({ isSchedulable: true, usableMinutes: 60, exposures: 12, id: o.id, __windowChecks: (++__windowChecks) });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 2, sortBy: 'editorial' }).map(o => o.id);
+      getMergedSuggestionSource = __origGetMergedSuggestionSource;
+      return { ids, accessChecks: __accessChecks, windowChecks: __windowChecks };
+    })()
+  `);
+  assert.equal(result.ids.join(','), 'A,B');
+  assert.equal(result.accessChecks, 2);
+  assert.equal(result.windowChecks, 2);
+});
+
+test('time-sorted suggestions reuse planning windows as the accessibility gate', () => {
+  vm.runInContext(`
+    __origGetMergedSuggestionSource = getMergedSuggestionSource;
+    var __suggestionSourceTime = [
+      { id:'A', name:'A', cat:'NGC', type:'nebula', ra:10, dec:20, mag:5, size:40, filter:'rgb', emission:false, desc:'' },
+      { id:'B', name:'B', cat:'NGC', type:'nebula', ra:20, dec:25, mag:6, size:30, filter:'rgb', emission:false, desc:'' }
+    ];
+    getMergedSuggestionSource = () => __suggestionSourceTime;
+    __accessChecks = 0;
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => { __accessChecks += 1; return true; };
+    getPlanningWindowForObject = o => ({
+      isSchedulable: true,
+      usableMinutes: o.id === 'A' ? 120 : 60,
+      exposures: o.id === 'A' ? 24 : 12
+    });
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const ids = getSuggestionCandidates({ limit: 2, sortBy: 'time' }).map(o => o.id);
+      getMergedSuggestionSource = __origGetMergedSuggestionSource;
+      return { ids, accessChecks: __accessChecks };
+    })()
+  `);
+  assert.equal(result.ids.join(','), 'A,B');
+  assert.equal(result.accessChecks, 0);
+});
+
 test('suggestions drop sub-objects contained inside a larger parent object', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK.concat([

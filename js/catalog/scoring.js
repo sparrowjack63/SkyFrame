@@ -1,6 +1,7 @@
 // État global top-N
 let CATALOG_TOP_N = parseInt(localStorage.getItem('catalog_top_n') || '100', 10);
 let CATALOG_TOPN_LIST = [];
+let SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
 
 function mergeCatalogAliases(baseAliases, nextAliases){
   return [...new Set([...(baseAliases || []), ...(nextAliases || [])])];
@@ -108,6 +109,18 @@ function buildTopNList(){
 
 function updateCatalogTopNList(){ buildTopNList(); }
 
+function getMergedSuggestionSource(){
+  if(SUGGESTION_SOURCE_CACHE.catalogRef === CATALOG && Array.isArray(SUGGESTION_SOURCE_CACHE.entries)){
+    return SUGGESTION_SOURCE_CACHE.entries;
+  }
+  const byId={};
+  CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
+  CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
+  const entries=Object.values(byId).filter(o => o && o.cat!=='Planet');
+  SUGGESTION_SOURCE_CACHE = { catalogRef: CATALOG, entries };
+  return entries;
+}
+
 function getSuggestionFamily(o){
   if(isCompositionEntry(o)) return 'composition';
   if(o.type==='snr') return 'snr';
@@ -185,6 +198,13 @@ function isSuggestionSubobjectOf(parent, child){
   return false;
 }
 
+function compareEditorialSuggestions(a, b){
+  if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);
+  if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
+  if((b.size||0)!==(a.size||0)) return (b.size||0)-(a.size||0);
+  return (a.mag ?? 99) - (b.mag ?? 99);
+}
+
 function getSuggestionCandidates(options){
   const opts=(typeof options==='string') ? {filter:options} : (options || {});
   const filter=opts.filter || 'all';
@@ -192,11 +212,8 @@ function getSuggestionCandidates(options){
   const sortBy=opts.sortBy || 'editorial';
   const accessibleOnly=opts.onlyAccessible !== false;
   const nightBounds=(accessibleOnly && typeof getOrComputeNightBounds==='function') ? getOrComputeNightBounds() : null;
-  const byId={};
-  CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
-  CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
-  const ranked = Object.values(byId)
-    .filter(o => o && o.cat!=='Planet')
+  const source=getMergedSuggestionSource();
+  const baseRanked = source
     .map(o => {
       const rt=getRating(o.id);
       return {
@@ -204,27 +221,29 @@ function getSuggestionCandidates(options){
         score: calcScore(o).total,
         suggestionStars: rt.stars || 0,
         suggestionRating: rt,
-        suggestionGroupMembers: o.groupMembers || (CUSTOM_META[o.id] && CUSTOM_META[o.id].groupMembers) || null,
-        suggestionWindow: (nightBounds && typeof getPlanningWindowForObject==='function')
-          ? getPlanningWindowForObject(o, nightBounds)
-          : null
+        suggestionGroupMembers: o.groupMembers || (CUSTOM_META[o.id] && CUSTOM_META[o.id].groupMembers) || null
       };
     })
-    .filter(o => !accessibleOnly || (nightBounds && isAccessibleAtAnyNightMoment(o, nightBounds)))
-    .sort((a,b) => {
-      if(sortBy==='time'){
+    .sort(compareEditorialSuggestions);
+
+  const ranked = (sortBy==='time' && nightBounds && typeof getPlanningWindowForObject==='function')
+    ? baseRanked
+      .map(o => ({
+        ...o,
+        suggestionWindow: getPlanningWindowForObject(o, nightBounds)
+      }))
+      .filter(o => !accessibleOnly || (o.suggestionWindow && o.suggestionWindow.isSchedulable))
+      .sort((a,b) => {
         const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
         const usableB=b.suggestionWindow && b.suggestionWindow.isSchedulable ? b.suggestionWindow.usableMinutes : 0;
         if(usableB!==usableA) return usableB-usableA;
-      }
-      if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);
-      if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
-      if((b.size||0)!==(a.size||0)) return (b.size||0)-(a.size||0);
-      return (a.mag ?? 99) - (b.mag ?? 99);
-    });
+        return compareEditorialSuggestions(a,b);
+      })
+    : baseRanked;
   const deduped=[];
   const filtered=[];
   for(const o of ranked){
+    if(sortBy!=='time' && accessibleOnly && (!nightBounds || !isAccessibleAtAnyNightMoment(o, nightBounds))) continue;
     if(deduped.some(existing =>
       areSuggestionDuplicates(existing, o)
       || areSuggestionSameField(existing, o)
@@ -235,6 +254,12 @@ function getSuggestionCandidates(options){
       filtered.push(o);
       if(filtered.length >= limit) break;
     }
+  }
+  if(sortBy!=='time' && nightBounds && typeof getPlanningWindowForObject==='function'){
+    return filtered.map(o => ({
+      ...o,
+      suggestionWindow: getPlanningWindowForObject(o, nightBounds)
+    }));
   }
   return filtered;
 }
