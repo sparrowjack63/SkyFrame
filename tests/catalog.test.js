@@ -96,6 +96,39 @@ test('summer gaps remain searchable via curated aliases', () => {
   assert.equal(result.pelican, true);
 });
 
+test('new dark and reflection targets stay searchable via canonical ids and aliases', () => {
+  vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
+  const result = sf(`
+    (() => {
+      const darkShark = CATALOG_TOPN_LIST.find(x => x.id === 'LDN1235');
+      const seahorse = CATALOG_TOPN_LIST.find(x => x.id === 'Barnard150');
+      const ghost = CATALOG_TOPN_LIST.find(x => x.id === 'VdB141');
+      const gammaCas = CATALOG_TOPN_LIST.find(x => x.id === 'IC59_IC63');
+      const eNebula = CATALOG_TOPN_LIST.find(x => x.id === 'B142_B143');
+      return {
+        darkSharkById: objectMatchesSearch(darkShark, 'LDN1235'),
+        darkSharkByAlias: objectMatchesSearch(darkShark, 'Dark Shark'),
+        seahorseByAlias: objectMatchesSearch(seahorse, 'Seahorse'),
+        ghostByAlias: objectMatchesSearch(ghost, 'Ghost Nebula'),
+        ghostBySharpless: objectMatchesSearch(ghost, 'Sh2-136'),
+        gammaCasByAlias: objectMatchesSearch(gammaCas, 'Ghost of Cassiopeia'),
+        gammaCasByCompact: objectMatchesSearch(gammaCas, 'IC59/63'),
+        eNebulaByAlias: objectMatchesSearch(eNebula, 'Barnards E'),
+        eNebulaByMembers: objectMatchesSearch(eNebula, 'B142')
+      };
+    })()
+  `);
+  assert.equal(result.darkSharkById, true);
+  assert.equal(result.darkSharkByAlias, true);
+  assert.equal(result.seahorseByAlias, true);
+  assert.equal(result.ghostByAlias, true);
+  assert.equal(result.ghostBySharpless, true);
+  assert.equal(result.gammaCasByAlias, true);
+  assert.equal(result.gammaCasByCompact, true);
+  assert.equal(result.eNebulaByAlias, true);
+  assert.equal(result.eNebulaByMembers, true);
+});
+
 test('dynamic catalog merge preserves fallback aliases for search', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK.map(o => {
