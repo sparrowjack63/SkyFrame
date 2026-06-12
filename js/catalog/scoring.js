@@ -2,6 +2,21 @@
 let CATALOG_TOP_N = parseInt(localStorage.getItem('catalog_top_n') || '100', 10);
 let CATALOG_TOPN_LIST = [];
 
+function mergeCatalogAliases(baseAliases, nextAliases){
+  return [...new Set([...(baseAliases || []), ...(nextAliases || [])])];
+}
+
+function mergeSuggestionCatalogEntry(base, next){
+  if(!base) return next ? {...next} : null;
+  if(!next) return {...base};
+  const aliases=mergeCatalogAliases(base.aliases, next.aliases);
+  return {
+    ...base,
+    ...next,
+    aliases: aliases.length ? aliases : undefined,
+  };
+}
+
 // js/catalog/scoring.js — Calcul de score et top-N
 
 function calcScore(o) {
@@ -92,3 +107,47 @@ function buildTopNList(){
 }
 
 function updateCatalogTopNList(){ buildTopNList(); }
+
+function getSuggestionFamily(o){
+  if(isCompositionEntry(o)) return 'composition';
+  if(o.type==='snr') return 'snr';
+  if(o.type==='planetary') return 'planetary';
+  if(o.type==='cluster') return 'cluster';
+  if(o.type==='galaxy') return 'galaxy';
+  return 'nebula';
+}
+
+function matchesSuggestionFilter(o, filter){
+  if(filter==='all') return true;
+  const family=getSuggestionFamily(o);
+  if(filter==='nebula') return family==='nebula' || family==='snr';
+  return family===filter;
+}
+
+function getSuggestionCandidates(options){
+  const opts=(typeof options==='string') ? {filter:options} : (options || {});
+  const filter=opts.filter || 'all';
+  const limit=Number.isFinite(Number(opts.limit)) ? Math.max(0, Number(opts.limit)) : 100;
+  const byId={};
+  CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
+  CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
+  return Object.values(byId)
+    .filter(o => o && o.cat!=='Planet')
+    .map(o => {
+      const rt=getRating(o.id);
+      return {
+        ...o,
+        score: calcScore(o).total,
+        suggestionStars: rt.stars || 0,
+        suggestionRating: rt
+      };
+    })
+    .filter(o => matchesSuggestionFilter(o, filter))
+    .sort((a,b) => {
+      if((b.suggestionStars||0)!==(a.suggestionStars||0)) return (b.suggestionStars||0)-(a.suggestionStars||0);
+      if((b.score||0)!==(a.score||0)) return (b.score||0)-(a.score||0);
+      if((b.size||0)!==(a.size||0)) return (b.size||0)-(a.size||0);
+      return (a.mag ?? 99) - (b.mag ?? 99);
+    })
+    .slice(0, limit);
+}

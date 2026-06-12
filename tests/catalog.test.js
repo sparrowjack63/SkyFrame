@@ -151,3 +151,41 @@ test('dynamic catalog merge preserves fallback aliases for search', () => {
   assert.equal(result.hasAlias, true);
   assert.equal(result.matchesAlias, true);
 });
+
+test('suggestion ranking keeps editorial 5-star entries at the top and filters by family', () => {
+  vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
+  const result = sf(`
+    (() => {
+      const top = getSuggestionCandidates({ limit: 12 }).map(o => ({ id: o.id, stars: o.suggestionStars }));
+      const galaxies = getSuggestionCandidates({ filter: 'galaxy', limit: 6 });
+      const compositions = getSuggestionCandidates({ filter: 'composition', limit: 6 });
+      return {
+        top,
+        topAreFiveStars: top.every(o => o.stars === 5),
+        galaxyOnly: galaxies.every(o => getSuggestionFamily(o) === 'galaxy'),
+        compositionOnly: compositions.every(o => getSuggestionFamily(o) === 'composition')
+      };
+    })()
+  `);
+  assert.equal(result.topAreFiveStars, true);
+  assert.equal(result.galaxyOnly, true);
+  assert.equal(result.compositionOnly, true);
+});
+
+test('suggestion image URL uses CDS HiPS cutouts when coordinates exist', () => {
+  vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
+  const result = sf(`
+    (() => {
+      const m31 = CATALOG_FALLBACK.find(o => o.id === 'M31');
+      const url = getSuggestionImageUrl(m31);
+      return {
+        hasService: typeof url === 'string' && url.includes('hips2fits'),
+        hasCoords: url.includes('ra=10.680000') && url.includes('dec=41.270000'),
+        nullWhenMissing: getSuggestionImageUrl({ id: 'X' }) === null
+      };
+    })()
+  `);
+  assert.equal(result.hasService, true);
+  assert.equal(result.hasCoords, true);
+  assert.equal(result.nullWhenMissing, true);
+});

@@ -42,6 +42,25 @@ function getAstroBinSearchUrl(o){
   return query ? `https://www.astrobin.com/search/?q=${encodeURIComponent(query)}` : null;
 }
 
+function getSuggestionImageUrl(o){
+  if(!o) return null;
+  const ra=Number(o.ra);
+  const dec=Number(o.dec);
+  if(!Number.isFinite(ra) || !Number.isFinite(dec)) return null;
+  const sizeArcmin=Number(o.size) || 20;
+  const fovDeg=Math.max(0.35, Math.min(5, (sizeArcmin * 1.8) / 60));
+  return 'https://alasky.cds.unistra.fr/hips-image-services/hips2fits'
+    + `?hips=${encodeURIComponent('CDS/P/DSS2/color')}`
+    + '&format=jpg'
+    + '&width=640'
+    + '&height=400'
+    + '&projection=TAN'
+    + '&coordsys=icrs'
+    + `&fov=${encodeURIComponent(fovDeg.toFixed(3))}`
+    + `&ra=${encodeURIComponent(ra.toFixed(6))}`
+    + `&dec=${encodeURIComponent(dec.toFixed(6))}`;
+}
+
 function isCompositionEntry(o){
   return !!(o && ((o.cat&&String(o.cat).startsWith('Comp')) || (Array.isArray(o.groupMembers)&&o.groupMembers.length)));
 }
