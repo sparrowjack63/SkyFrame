@@ -220,7 +220,9 @@ function isSuggestionDedupedBy(existing, o){
   if(parentSize>0 && childSize>0){
     const parentRadius=getSuggestionParentRadiusDeg(existing);
     if(existing.type==='galaxy' && o.type!=='galaxy'){
-      if(sep<=parentRadius*0.8 && childSize<=parentSize*0.12) return true;
+      const childRadius=((childSize/60)/2);
+      const containmentRadius=Math.max(parentRadius*1.05, parentRadius + childRadius*2);
+      if(sep<=containmentRadius && childSize<=parentSize*0.12) return true;
     } else if(existing.type==='nebula' && (o.type==='nebula'||o.type==='cluster')){
       if(sep<=parentRadius*0.75 && childSize<=parentSize*0.35) return true;
     } else if(isCompositionEntry(existing)){
