@@ -250,13 +250,55 @@ function compareEditorialSuggestions(a, b){
   return (a.mag ?? 99) - (b.mag ?? 99);
 }
 
-function dedupeSuggestionList(ranked){
-  const deduped=[];
-  for(const o of ranked){
-    if(deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
-    deduped.push(o);
+function areSuggestionPresentationLinked(a, b){
+  if(!a || !b || a.id===b.id) return false;
+  return isSuggestionDedupedBy(a, b) || isSuggestionDedupedBy(b, a);
+}
+
+function buildSuggestionPresentationEntry(component){
+  const ranked=component.slice().sort(compareEditorialSuggestions);
+  const composition=ranked.find(isCompositionEntry) || null;
+  const representative=composition || ranked[0];
+  const memberIds=[...new Set(component.map(o => o.id))];
+  const memberEntries=ranked.map(o => ({
+    id: o.id,
+    name: formatDisplayName(o),
+    type: o.type,
+    cat: o.cat
+  }));
+  return {
+    ...representative,
+    suggestionRepresentativeId: representative.id,
+    suggestionMemberIds: memberIds,
+    suggestionMembers: memberEntries,
+    suggestionGroupType: memberIds.length <= 1 ? 'single' : (composition ? 'composition' : 'field'),
+    suggestionGroupSize: memberIds.length,
+    suggestionGroupMembers: memberIds.filter(id => id !== representative.id),
+    _presentationMemberIds: new Set(memberIds),
+  };
+}
+
+function buildSuggestionPresentationEntries(ranked){
+  const entries=[];
+  const visited=new Set();
+  for(const candidate of ranked){
+    if(visited.has(candidate.id)) continue;
+    const queue=[candidate];
+    const component=[];
+    visited.add(candidate.id);
+    while(queue.length){
+      const cur=queue.shift();
+      component.push(cur);
+      ranked.forEach(other => {
+        if(visited.has(other.id)) return;
+        if(!areSuggestionPresentationLinked(cur, other)) return;
+        visited.add(other.id);
+        queue.push(other);
+      });
+    }
+    entries.push(buildSuggestionPresentationEntry(component));
   }
-  return deduped;
+  return entries;
 }
 
 function getSuggestionCandidates(options){
@@ -283,29 +325,25 @@ function getSuggestionCandidates(options){
       };
     })
     .sort(compareEditorialSuggestions);
+  const presentationEntries=buildSuggestionPresentationEntries(baseRanked);
 
   const ranked = (sortBy==='time' && nightBounds && typeof getPlanningWindowForObject==='function')
-    ? dedupeSuggestionList(
-        baseRanked
+    ? presentationEntries
         .map(o => ({
           ...o,
           suggestionWindow: getPlanningWindowForObject(o, nightBounds)
         }))
         .filter(o => !accessibleOnly || (o.suggestionWindow && o.suggestionWindow.isSchedulable))
-      )
       .sort((a,b) => {
         const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
         const usableB=b.suggestionWindow && b.suggestionWindow.isSchedulable ? b.suggestionWindow.usableMinutes : 0;
         if(usableB!==usableA) return usableB-usableA;
         return compareEditorialSuggestions(a,b);
       })
-    : baseRanked;
-  const deduped=[];
+    : presentationEntries;
   const filtered=[];
   for(const o of ranked){
     if(sortBy!=='time' && accessibleOnly && (!nightBounds || !isAccessibleAtAnyNightMoment(o, nightBounds))) continue;
-    if(sortBy!=='time' && deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
-    if(sortBy!=='time') deduped.push(o);
     if(matchesSuggestionFilter(o, filter)){
       filtered.push(o);
       if(filtered.length >= limit) break;

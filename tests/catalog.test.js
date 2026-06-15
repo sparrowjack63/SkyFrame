@@ -328,6 +328,36 @@ test('suggestions collapse same-field companion duplicates like North America/Pe
   assert.equal(result.keepsHeartAndSoulSeparate, true);
 });
 
+test('grouped suggestions keep same-field member ids on the surviving representative', () => {
+  vm.runInContext(`
+    CATALOG = CATALOG_FALLBACK;
+    updateCatalogTopNList();
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const suggestions = getSuggestionCandidates({ limit: 200, onlyAccessible: false });
+      const northAmerica = suggestions.find(o => o.id === 'NGC7000' || o.id === 'IC5070');
+      const veil = suggestions.find(o => o.id === 'NGC6960' || o.id === 'NGC6992');
+      return {
+        northAmericaId: northAmerica && northAmerica.id,
+        northAmericaMembers: northAmerica && northAmerica.suggestionMemberIds,
+        northAmericaGroupType: northAmerica && northAmerica.suggestionGroupType,
+        veilId: veil && veil.id,
+        veilMembers: veil && veil.suggestionMemberIds,
+        veilGroupType: veil && veil.suggestionGroupType
+      };
+    })()
+  `);
+  assert.equal(result.northAmericaId, 'NGC7000');
+  assert.deepEqual([...result.northAmericaMembers].sort(), ['IC5070', 'NGC7000']);
+  assert.equal(result.northAmericaGroupType, 'field');
+  assert.equal(result.veilId, 'NGC6960');
+  assert.deepEqual([...result.veilMembers].sort(), ['NGC6960', 'NGC6992']);
+  assert.equal(result.veilGroupType, 'field');
+});
+
 test('suggestions can sort by usable night time', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK;

@@ -71,6 +71,13 @@ function renderSuggestionFact(value){
   return `<span class="suggestion-fact">${escapeHtml(value)}</span>`;
 }
 
+function renderSuggestionMembers(o){
+  const members=(o && Array.isArray(o.suggestionMembers)) ? o.suggestionMembers : [];
+  if(members.length <= 1) return '';
+  const labels=members.map(m => escapeHtml(m.id)).join(' · ');
+  return `<div class="suggestion-desc" style="font-size:11px;color:var(--accent2);margin-top:6px;">🧩 ${labels}</div>`;
+}
+
 function formatSuggestionDuration(mins){
   if(typeof formatDurationMinutes === 'function') return formatDurationMinutes(mins);
   if(!isFinite(mins)||mins<=0) return '0 min';
@@ -120,6 +127,9 @@ function renderSuggestions(){
     const exposureCount=windowInfo && windowInfo.isSchedulable ? windowInfo.exposures : 0;
     const usableLabel=formatSuggestionDuration(usableMinutes);
     const facts=[
+      o.suggestionGroupType==='field'
+        ? `${skyFrameSuggestionsTranslate('suggestions.membersShort')} ${o.suggestionGroupSize}`
+        : null,
       `${TYPE_LABEL[o.type] || o.type}`,
       `${o.size}'`,
       `${skyFrameSuggestionsTranslate('suggestions.scoreShort')} ${o.score}`,
@@ -127,7 +137,7 @@ function renderSuggestions(){
       `${skyFrameSuggestionsTranslate('suggestions.exposureShort')} ${usableLabel}`,
       `${skyFrameSuggestionsTranslate('suggestions.subsShort')} ${exposureCount}`,
       rec.name
-    ];
+    ].filter(Boolean);
     return `<article class="suggestion-card">
       <div class="suggestion-thumb ${imageUrl?'':'suggestion-thumb-fallback'}">
         ${imageUrl?`<img src="${imageUrl}" alt="${escapeHtml(formatDisplayName(o))}" loading="lazy" referrerpolicy="no-referrer" onerror="handleSuggestionImageError(this)">`:''}
@@ -156,6 +166,7 @@ function renderSuggestions(){
         </div>
         <div class="suggestion-window-line">${skyFrameSuggestionsTranslate('suggestions.windowLine', { duration: usableLabel, exposures: exposureCount, count: exposureCount })}</div>
         <div class="suggestion-desc">${escapeHtml(rt.reason || o.desc || skyFrameSuggestionsTranslate('rating.reason.unrated'))}</div>
+        ${renderSuggestionMembers(o)}
         <div class="suggestion-facts">${facts.map(renderSuggestionFact).join('')}</div>
         <div class="suggestion-actions">
           <button class="suggestion-btn primary" type="button" onclick="addToPlannerById('${safeId}','suggestions')">${skyFrameSuggestionsTranslate('planner.action.addToPlanner')}</button>

@@ -159,6 +159,7 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('en', {
   'suggestions.altShort': 'alt',
   'suggestions.exposureShort': 'time',
   'suggestions.subsShort': 'subs',
+  'suggestions.membersShort': 'field',
   'suggestions.tonightShort': 'tonight',
   'suggestions.windowLine': '{{duration}} usable · {{exposures}} x 5 min subs',
   'suggestions.filter.all': 'All',
