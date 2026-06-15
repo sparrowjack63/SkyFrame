@@ -21,39 +21,33 @@ function openModal(id){
   const color=TYPE_COLOR[o.type]||'#fff';
   const poseMin=o.emission?8:4;
   const sc=o.cat!=='Planet'?calcScore(o):null;
+  const nb=getOrComputeNightBounds();
+  const planningWindow=o.cat!=='Planet' ? getPlanningWindowForObject(o, nb) : null;
 
-  // Compute 12h window from 18h tonight
-  const base=new Date(t);base.setHours(18,0,0,0);
-  if(base>t) base.setDate(base.getDate()-1);
-  let winStart=null,winEnd=null,inW=false;
-  for(let i=0;i<=16*4;i++){
-    const tc=new Date(base.getTime()+i*15*60000);
-    const ld=lst(jd(tc),S.lon);
-    const{alt:a,az:z}=altaz(o.ra,o.dec,ld,S.lat);
-    const ac=isAcc(a,z);
-    if(ac&&!inW){winStart=tc;inW=true;}
-    if(!ac&&inW){winEnd=tc;break;}
-  }
-  if(inW&&!winEnd) winEnd=new Date(base.getTime()+16*3600000);
+  const winStart=planningWindow&&planningWindow.isSchedulable ? planningWindow.startDate : null;
+  const winEnd=planningWindow&&planningWindow.isSchedulable ? planningWindow.endDate : null;
   const ft=d=>d?`${String(d.getHours()).padStart(2,'0')}h${String(d.getMinutes()).padStart(2,'0')}`:'--';
 
   // Timeline bar
   let tlHTML='';
   if(winStart&&winEnd){
-    const nightStart=18,nightEnd=34; // 18h → 10h+24
+    const nightStart=nb.sunset,nightEnd=nb.sunrise;
     const ws=winStart.getHours()+winStart.getMinutes()/60;
     const we=winEnd.getHours()+winEnd.getMinutes()/60;
     const wsAdj=ws<12?ws+24:ws,weAdj=we<12?we+24:we;
     const x1=Math.max(0,Math.min(100,(wsAdj-nightStart)/(nightEnd-nightStart)*100));
     const x2=Math.max(0,Math.min(100,(weAdj-nightStart)/(nightEnd-nightStart)*100));
     const dur=weAdj-wsAdj;
+    const midnightPct=Math.max(0,Math.min(100,(24-nightStart)/(nightEnd-nightStart)*100));
+    const fourPct=Math.max(0,Math.min(100,(28-nightStart)/(nightEnd-nightStart)*100));
     tlHTML=`<div class="window-timeline">
       <div class="window-bar" style="left:${x1}%;width:${x2-x1}%;background:${color}">
         <span class="window-label">${modalTranslate('modal.window.availableHours','{{hours}}h disponible', { hours: dur.toFixed(1) })}</span>
       </div>
-      <span class="window-tick" style="left:0%">18h</span>
-      <span class="window-tick" style="left:37.5%">24h</span>
-      <span class="window-tick" style="left:75%">04h</span>
+      <span class="window-tick" style="left:0%">${fmtH(nightStart)}</span>
+      <span class="window-tick" style="left:${midnightPct}%">24h</span>
+      <span class="window-tick" style="left:${fourPct}%">04h</span>
+      <span class="window-tick" style="left:100%">${fmtH(nightEnd)}</span>
     </div>`;
   }
 
@@ -76,7 +70,7 @@ function openModal(id){
       ${winStart?`<div class="modal-grid" style="margin-bottom:8px">
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.start','Début')}</div><div class="modal-stat-value" style="color:#69f0ae">${ft(winStart)}</div></div>
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.end','Fin')}</div><div class="modal-stat-value" style="color:#ff6b6b">${ft(winEnd)}</div></div>
-      </div>${tlHTML}`:`<div style="color:#ff6b6b;font-size:12px;padding:8px">${modalTranslate('modal.window.unavailable','Pas accessible cette nuit depuis votre site.')}</div>`}
+      </div>${tlHTML}`:`<div style="color:#ff6b6b;font-size:12px;padding:8px">${escapeHtml((planningWindow&&planningWindow.statusDetail)||modalTranslate('modal.window.unavailable','Pas accessible cette nuit depuis votre site.'))}</div>`}
     </div>
 
     <div class="modal-section">
