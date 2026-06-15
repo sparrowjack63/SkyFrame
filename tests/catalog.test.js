@@ -153,6 +153,91 @@ test('new dark and reflection targets stay searchable via canonical ids and alia
   assert.equal(result.eNebulaByMembers, true);
 });
 
+test('formatDisplayName prefers Messier ids when available', () => {
+  const result = sf(`
+    (() => ({
+      messierPrimary: formatDisplayName({ id:'M17', secondaryId:'NGC6618', cat:'Messier', name:'M17 — Oméga' }),
+      messierSecondary: formatDisplayName({ id:'NGC6618', secondaryId:'M17', cat:'NGC', name:'NGC6618 — Oméga' })
+    }))()
+  `);
+  assert.equal(result.messierPrimary, 'M17 — NGC 6618 — Oméga');
+  assert.equal(result.messierSecondary, 'M17 — NGC 6618 — Oméga');
+});
+
+test('suggestion source collapses stale NGC/Messier duplicates onto the Messier id', () => {
+  const result = sf(`
+    (() => {
+      CATALOG = [{
+        id:'NGC6618',
+        secondaryId:'M17',
+        name:'NGC6618 — Oméga',
+        cat:'NGC',
+        type:'nebula',
+        ra:275.1963,
+        dec:-16.1715,
+        mag:7,
+        size:12.6,
+        filter:'lextreme',
+        emission:true,
+        desc:'Nébuleuse d\\'émission brillante.'
+      }];
+      SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
+      const source = getMergedSuggestionSource();
+      const entry = source.find(o => o.id === 'M17');
+      return {
+        count: source.filter(o => o.id === 'M17' || o.id === 'NGC6618').length,
+        id: entry && entry.id,
+        secondaryId: entry && entry.secondaryId,
+        cat: entry && entry.cat,
+        name: entry && entry.name,
+        size: entry && entry.size
+      };
+    })()
+  `);
+  assert.equal(result.count, 1);
+  assert.equal(result.id, 'M17');
+  assert.equal(result.secondaryId, 'NGC6618');
+  assert.equal(result.cat, 'Messier');
+  assert.equal(result.name, 'M17 — Oméga');
+  assert.equal(result.size, 40);
+});
+
+test('Messier canonical merge keeps curated size so valid targets do not vanish from suggestions', () => {
+  const result = sf(`
+    (() => {
+      CATALOG = [{
+        id:'NGC6618',
+        secondaryId:'M17',
+        name:'NGC6618 — Oméga',
+        cat:'NGC',
+        type:'nebula',
+        ra:275.1963,
+        dec:-16.1715,
+        mag:7,
+        size:12.6,
+        filter:'lextreme',
+        emission:true,
+        desc:'Nébuleuse d\\'émission brillante.'
+      }];
+      SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
+      SUGGESTION_PRESENTATION_CACHE = { sourceRef: null, entries: null };
+      const source = getMergedSuggestionSource();
+      const presentation = getSuggestionPresentationEntries(source).find(o => o.id === 'M17');
+      const suggestions = getSuggestionCandidates({ limit: 200, onlyAccessible: false });
+      return {
+        size: presentation && presentation.size,
+        suggestionMaxSize: presentation && presentation.suggestionMaxSize,
+        passesThreshold: presentation && passesSuggestionSizeThreshold(presentation, 20),
+        hasSuggestion: suggestions.some(o => o.id === 'M17')
+      };
+    })()
+  `);
+  assert.equal(result.size, 40);
+  assert.equal(result.suggestionMaxSize, 40);
+  assert.equal(result.passesThreshold, true);
+  assert.equal(result.hasSuggestion, true);
+});
+
 test('dynamic catalog merge preserves fallback aliases for search', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK.map(o => {

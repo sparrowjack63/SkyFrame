@@ -438,6 +438,8 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('fr', {
   'modal.stat.azimuth': 'Azimut',
   'modal.stat.raDec': 'AR / Déc',
   'modal.stat.accessible': 'Accessible',
+  'modal.stat.accessibleNow': 'Accessible maintenant',
+  'modal.stat.accessibleTonight': 'Accessible cette nuit',
   'modal.stat.start': 'Début',
   'modal.stat.end': 'Fin',
   'modal.stat.filter': 'Filtre',

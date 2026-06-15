@@ -3,13 +3,20 @@
 function formatDisplayName(o){
   if(!o) return '';
   const raw=(o.name||o.id||'').trim();
-  if(o.cat!=='Messier') return raw;
-  const id=o.id||'';
+  const id=(o.id||'').trim();
   const secondary=(o.secondaryId||'').trim();
+  const messierId = /^M\d+$/i.test(id) ? id.toUpperCase() : (/^M\d+$/i.test(secondary) ? secondary.toUpperCase() : '');
+  if(!messierId && o.cat!=='Messier') return raw;
   const parts=raw.split(/[—–]/).map(s=>s.trim()).filter(Boolean);
   const labelParts=[];
-  if(id) labelParts.push(id);
-  if(secondary && secondary!==id) labelParts.push(secondary.replace(/^NGC(\d+)$/,'NGC $1').replace(/^IC(\d+)$/,'IC $1'));
+  if(messierId){
+    labelParts.push(messierId);
+    if(id && id.toUpperCase()!==messierId) labelParts.push(id.replace(/^NGC(\d+)$/,'NGC $1').replace(/^IC(\d+)$/,'IC $1'));
+    if(secondary && secondary.toUpperCase()!==messierId && secondary!==id) labelParts.push(secondary.replace(/^NGC(\d+)$/,'NGC $1').replace(/^IC(\d+)$/,'IC $1'));
+  } else {
+    if(id) labelParts.push(id);
+    if(secondary && secondary!==id) labelParts.push(secondary.replace(/^NGC(\d+)$/,'NGC $1').replace(/^IC(\d+)$/,'IC $1'));
+  }
   const title=parts.length>1 ? parts.slice(1).join(' — ') : (raw!==id ? raw : '');
   if(title) labelParts.push(title);
   return [...new Set(labelParts)].join(' — ') || raw;

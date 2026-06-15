@@ -14,7 +14,7 @@ function openModal(id){
   if(!o) return;
   const lstD=lst(jd(t),S.lon);
   const{alt,az}=altaz(o.ra,o.dec,lstD,S.lat);
-  const acc=isAcc(alt,az);
+  const accNow=isAcc(alt,az);
   const mp=moon(t);
   const rec=recFilter(o,mp.ill);
   const f=field();
@@ -58,10 +58,11 @@ function openModal(id){
     <div class="modal-section">
       <div class="modal-section-title">📍 ${modalTranslate('modal.section.positionAt','Position à {{time}}',{ time: ft(t) })}</div>
       <div class="modal-grid">
-        <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.altitude','Altitude')}</div><div class="modal-stat-value" style="color:${acc?color:'#ff6b6b'}">${Math.round(alt)}°</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.altitude','Altitude')}</div><div class="modal-stat-value" style="color:${accNow?color:'#ff6b6b'}">${Math.round(alt)}°</div></div>
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.azimuth','Azimut')}</div><div class="modal-stat-value">${Math.round(az)}°</div></div>
         <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.raDec','AR / Déc')}</div><div class="modal-stat-value" style="font-size:10px">${(o.ra/15).toFixed(2)}h / ${o.dec.toFixed(1)}°</div></div>
-        <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.accessible','Accessible')}</div><div class="modal-stat-value" style="color:${acc?'#69f0ae':'#ff6b6b'};font-size:12px">${acc?modalTranslate('modal.value.accessibleYes','✅ OUI'):modalTranslate('modal.value.accessibleNo','❌ NON')}</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.accessibleNow','Accessible maintenant')}</div><div class="modal-stat-value" style="color:${accNow?'#69f0ae':'#ff6b6b'};font-size:12px">${accNow?modalTranslate('modal.value.accessibleYes','✅ OUI'):modalTranslate('modal.value.accessibleNo','❌ NON')}</div></div>
+        <div class="modal-stat"><div class="modal-stat-label">${modalTranslate('modal.stat.accessibleTonight','Accessible cette nuit')}</div><div class="modal-stat-value" style="color:${winStart?'#69f0ae':'#ff6b6b'};font-size:12px">${winStart?modalTranslate('modal.value.accessibleYes','✅ OUI'):modalTranslate('modal.value.accessibleNo','❌ NON')}</div></div>
       </div>
     </div>
 

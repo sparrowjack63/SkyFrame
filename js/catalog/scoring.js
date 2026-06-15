@@ -5,19 +5,55 @@ let SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
 let SUGGESTION_PRESENTATION_CACHE = { sourceRef: null, entries: null };
 const SUGGESTION_MIN_SIZE_ARCMIN = 20;
 
-function mergeCatalogAliases(baseAliases, nextAliases){
-  return [...new Set([...(baseAliases || []), ...(nextAliases || [])])];
+function getMessierAliasId(o){
+  if(!o) return '';
+  const id=String(o.id || '').trim();
+  const secondaryId=String(o.secondaryId || '').trim();
+  if(/^M\d+$/i.test(id)) return id.toUpperCase();
+  if(/^M\d+$/i.test(secondaryId)) return secondaryId.toUpperCase();
+  return '';
+}
+
+function getSuggestionCanonicalId(o){
+  return getMessierAliasId(o) || String((o && o.id) || '').trim();
 }
 
 function mergeSuggestionCatalogEntry(base, next){
   if(!base) return next ? {...next} : null;
   if(!next) return {...base};
   const aliases=mergeCatalogAliases(base.aliases, next.aliases);
-  return {
+  const baseSize=Number(base.size);
+  const nextSize=Number(next.size);
+  const merged = {
     ...base,
     ...next,
     aliases: aliases.length ? aliases : undefined,
   };
+  // Keep the broadest editorial/live extent when the same target is merged
+  // across fallback and dynamic catalogs, otherwise large Messier nebulae can
+  // disappear from Suggestions after canonical alias collapsing.
+  if(Number.isFinite(baseSize) || Number.isFinite(nextSize)){
+    merged.size=Math.max(
+      Number.isFinite(baseSize) ? baseSize : 0,
+      Number.isFinite(nextSize) ? nextSize : 0
+    );
+  }
+  const messierId=getMessierAliasId(next) || getMessierAliasId(base);
+  if(!messierId) return merged;
+  const canonicalFallback = CATALOG_FALLBACK.find(o => o.id === messierId) || null;
+  const ids=[base.id, next.id, base.secondaryId, next.secondaryId]
+    .map(value => String(value || '').trim())
+    .filter(Boolean);
+  const nonMessierId=ids.find(id => id.toUpperCase() !== messierId) || '';
+  merged.id=messierId;
+  merged.cat='Messier';
+  merged.secondaryId=nonMessierId || null;
+  if(canonicalFallback && canonicalFallback.name) merged.name=canonicalFallback.name;
+  return merged;
+}
+
+function mergeCatalogAliases(baseAliases, nextAliases){
+  return [...new Set([...(baseAliases || []), ...(nextAliases || [])])];
 }
 
 // js/catalog/scoring.js — Calcul de score et top-N
@@ -121,8 +157,14 @@ function getMergedSuggestionSource(){
     return SUGGESTION_SOURCE_CACHE.entries;
   }
   const byId={};
-  CATALOG_FALLBACK.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
-  CATALOG.forEach(o => { byId[o.id]=mergeSuggestionCatalogEntry(byId[o.id], o); });
+  CATALOG_FALLBACK.forEach(o => {
+    const key=getSuggestionCanonicalId(o);
+    byId[key]=mergeSuggestionCatalogEntry(byId[key], o);
+  });
+  CATALOG.forEach(o => {
+    const key=getSuggestionCanonicalId(o);
+    byId[key]=mergeSuggestionCatalogEntry(byId[key], o);
+  });
   const entries=Object.values(byId).filter(o => o && o.cat!=='Planet');
   SUGGESTION_SOURCE_CACHE = { catalogRef: CATALOG, entries };
   return entries;
@@ -324,6 +366,7 @@ function buildSuggestionPresentationEntry(component){
   const maxSize=Math.max(Number(representative.size) || 0, ...memberSizes);
   const memberEntries=ranked.map(o => ({
     id: o.id,
+    secondaryId: o.secondaryId || null,
     name: formatDisplayName(o),
     type: o.type,
     cat: o.cat

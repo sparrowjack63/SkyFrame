@@ -64,6 +64,34 @@ test('OpenNGC parser accepts RfN reflection nebulae and keeps curated aliases', 
   assert.ok(result.aliases.includes('Blue Horsehead'));
 });
 
+test('OpenNGC parser reads the modern M column and keeps Messier presentation names', () => {
+  const result = sf(`
+    (() => {
+      S.lat = 45.55;
+      S.lon = 2.95;
+      S.altMin = 20;
+      S.azMin = 0;
+      S.azMax = 360;
+      S.horizonConstraint = false;
+      const csv = [
+        'Name;Type;RA;Dec;Const;MajAx;MinAx;PosAng;B-Mag;V-Mag;J-Mag;H-Mag;K-Mag;SurfBr;Hubble;Pax;Pm-RA;Pm-Dec;RadVel;Redshift;Cstar U-Mag;Cstar B-Mag;Cstar V-Mag;M;NGC;IC;Cstar Names;Identifiers;Common names;NED notes;OpenNGC notes;Sources',
+        'NGC6618;Neb;18:20:47.11;-16:10:17.5;Sgr;12.60;;;6.00;7.00;;;;;;0.6000;-0.040;-1.400;-45;-0.000149;;;;017;;;;LBN 60,MWSC 2896;Checkmark Nebula,Lobster Nebula,Swan Nebula,omega Nebula;;;'
+      ].join('\\n');
+      const catalog = _parseOpenNGC(csv);
+      const object = catalog.find(o => o.id === 'M17');
+      return object ? {
+        id: object.id,
+        secondaryId: object.secondaryId,
+        name: object.name
+      } : null;
+    })()
+  `);
+  assert.ok(result);
+  assert.equal(result.id, 'M17');
+  assert.equal(result.secondaryId, 'NGC6618');
+  assert.equal(result.name, 'M17 — Oméga');
+});
+
 test('site-dependent declination prefilter keeps reachable southern targets and rejects impossible ones', () => {
   const result = sf(`
     (() => {
