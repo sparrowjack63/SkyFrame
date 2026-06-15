@@ -2,6 +2,8 @@
 let CATALOG_TOP_N = parseInt(localStorage.getItem('catalog_top_n') || '100', 10);
 let CATALOG_TOPN_LIST = [];
 let SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
+let SUGGESTION_PRESENTATION_CACHE = { sourceRef: null, entries: null };
+const SUGGESTION_MIN_SIZE_ARCMIN = 20;
 
 function mergeCatalogAliases(baseAliases, nextAliases){
   return [...new Set([...(baseAliases || []), ...(nextAliases || [])])];
@@ -250,23 +252,135 @@ function compareEditorialSuggestions(a, b){
   return (a.mag ?? 99) - (b.mag ?? 99);
 }
 
-function dedupeSuggestionList(ranked){
-  const deduped=[];
-  for(const o of ranked){
-    if(deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
-    deduped.push(o);
-  }
-  return deduped;
+function getSuggestionSpatialBucketKey(raBin, decBin){
+  return `${raBin}:${decBin}`;
 }
 
-function getSuggestionCandidates(options){
-  const opts=(typeof options==='string') ? {filter:options} : (options || {});
-  const filter=opts.filter || 'all';
-  const limit=Number.isFinite(Number(opts.limit)) ? Math.max(0, Number(opts.limit)) : 100;
-  const sortBy=opts.sortBy || 'editorial';
-  const accessibleOnly=opts.onlyAccessible !== false;
-  const nightBounds=(accessibleOnly && typeof getOrComputeNightBounds==='function') ? getOrComputeNightBounds() : null;
-  const source=getMergedSuggestionSource();
+function normalizeSuggestionRaDeg(ra){
+  const value=Number(ra);
+  if(!Number.isFinite(value)) return 0;
+  const normalized=value % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
+function getSuggestionSpatialBins(o, bucketDeg=3){
+  const ra=normalizeSuggestionRaDeg(o && o.ra);
+  const dec=Number(o && o.dec);
+  if(!Number.isFinite(dec)) return null;
+  return {
+    raBin: Math.floor(ra / bucketDeg),
+    decBin: Math.floor((dec + 90) / bucketDeg)
+  };
+}
+
+function buildSuggestionSpatialIndex(ranked, bucketDeg=3){
+  const buckets=new Map();
+  ranked.forEach(o => {
+    const bins=getSuggestionSpatialBins(o, bucketDeg);
+    if(!bins) return;
+    const key=getSuggestionSpatialBucketKey(bins.raBin, bins.decBin);
+    if(!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(o.id);
+  });
+  return { bucketDeg, buckets };
+}
+
+function getSuggestionNeighborIds(o, byId, spatialIndex){
+  const ids=new Set();
+  const add=id => {
+    if(!id || id===o.id || !byId[id]) return;
+    ids.add(id);
+  };
+  if(o._companionIds) o._companionIds.forEach(add);
+  if(o._groupMembersSet) o._groupMembersSet.forEach(add);
+  (o.suggestionGroupMembers || []).forEach(add);
+
+  const bins=getSuggestionSpatialBins(o, spatialIndex.bucketDeg);
+  if(!bins) return ids;
+  for(let dra=-1; dra<=1; dra++){
+    for(let ddec=-1; ddec<=1; ddec++){
+      const raBin=bins.raBin + dra;
+      const decBin=bins.decBin + ddec;
+      const key=getSuggestionSpatialBucketKey(raBin, decBin);
+      const bucket=spatialIndex.buckets.get(key);
+      if(!bucket) continue;
+      bucket.forEach(add);
+    }
+  }
+  return ids;
+}
+
+function areSuggestionPresentationLinked(a, b){
+  if(!a || !b || a.id===b.id) return false;
+  return isSuggestionDedupedBy(a, b) || isSuggestionDedupedBy(b, a);
+}
+
+function buildSuggestionPresentationEntry(component){
+  const ranked=component.slice().sort(compareEditorialSuggestions);
+  const composition=ranked.find(isCompositionEntry) || null;
+  const representative=composition || ranked[0];
+  const memberIds=[...new Set(component.map(o => o.id))];
+  const memberSizes=component.map(o => Number(o.size) || 0);
+  const maxSize=Math.max(Number(representative.size) || 0, ...memberSizes);
+  const memberEntries=ranked.map(o => ({
+    id: o.id,
+    name: formatDisplayName(o),
+    type: o.type,
+    cat: o.cat
+  }));
+  return {
+    ...representative,
+    suggestionRepresentativeId: representative.id,
+    suggestionMemberIds: memberIds,
+    suggestionMembers: memberEntries,
+    suggestionGroupType: memberIds.length <= 1 ? 'single' : (composition ? 'composition' : 'field'),
+    suggestionGroupSize: memberIds.length,
+    suggestionGroupMembers: memberIds.filter(id => id !== representative.id),
+    suggestionMaxSize: maxSize,
+    _presentationMemberIds: new Set(memberIds),
+  };
+}
+
+function buildSuggestionPresentationEntries(ranked){
+  const entries=[];
+  const visited=new Set();
+  const byId=Object.fromEntries(ranked.map(o => [o.id, o]));
+  const spatialIndex=buildSuggestionSpatialIndex(ranked);
+  const pairCache=new Map();
+  function areLinkedCached(a, b){
+    const key=a.id < b.id ? `${a.id}|${b.id}` : `${b.id}|${a.id}`;
+    if(pairCache.has(key)) return pairCache.get(key);
+    const linked=areSuggestionPresentationLinked(a, b);
+    pairCache.set(key, linked);
+    return linked;
+  }
+  for(const candidate of ranked){
+    if(visited.has(candidate.id)) continue;
+    const queue=[candidate];
+    const component=[];
+    visited.add(candidate.id);
+    while(queue.length){
+      const cur=queue.shift();
+      component.push(cur);
+      const neighborIds=getSuggestionNeighborIds(cur, byId, spatialIndex);
+      neighborIds.forEach(id => {
+        if(visited.has(id)) return;
+        const other=byId[id];
+        if(!other) return;
+        if(!areLinkedCached(cur, other)) return;
+        visited.add(other.id);
+        queue.push(other);
+      });
+    }
+    entries.push(buildSuggestionPresentationEntry(component));
+  }
+  return entries;
+}
+
+function getSuggestionPresentationEntries(source){
+  if(SUGGESTION_PRESENTATION_CACHE.sourceRef === source && Array.isArray(SUGGESTION_PRESENTATION_CACHE.entries)){
+    return SUGGESTION_PRESENTATION_CACHE.entries;
+  }
   const baseRanked = source
     .map(o => {
       const rt=getRating(o.id);
@@ -283,29 +397,45 @@ function getSuggestionCandidates(options){
       };
     })
     .sort(compareEditorialSuggestions);
+  const entries=buildSuggestionPresentationEntries(baseRanked);
+  SUGGESTION_PRESENTATION_CACHE = { sourceRef: source, entries };
+  return entries;
+}
+
+function passesSuggestionSizeThreshold(o, minSizeArcmin=SUGGESTION_MIN_SIZE_ARCMIN){
+  if(!(minSizeArcmin > 0)) return true;
+  const effectiveSize=Math.max(Number(o?.suggestionMaxSize) || 0, Number(o?.size) || 0);
+  return effectiveSize >= minSizeArcmin;
+}
+
+function getSuggestionCandidates(options){
+  const opts=(typeof options==='string') ? {filter:options} : (options || {});
+  const filter=opts.filter || 'all';
+  const limit=Number.isFinite(Number(opts.limit)) ? Math.max(0, Number(opts.limit)) : 100;
+  const sortBy=opts.sortBy || 'editorial';
+  const minSizeArcmin=Number.isFinite(Number(opts.minSizeArcmin)) ? Number(opts.minSizeArcmin) : SUGGESTION_MIN_SIZE_ARCMIN;
+  const accessibleOnly=opts.onlyAccessible !== false;
+  const nightBounds=(accessibleOnly && typeof getOrComputeNightBounds==='function') ? getOrComputeNightBounds() : null;
+  const source=getMergedSuggestionSource();
+  const presentationEntries=getSuggestionPresentationEntries(source).filter(o => passesSuggestionSizeThreshold(o, minSizeArcmin));
 
   const ranked = (sortBy==='time' && nightBounds && typeof getPlanningWindowForObject==='function')
-    ? dedupeSuggestionList(
-        baseRanked
+    ? presentationEntries
         .map(o => ({
           ...o,
           suggestionWindow: getPlanningWindowForObject(o, nightBounds)
         }))
         .filter(o => !accessibleOnly || (o.suggestionWindow && o.suggestionWindow.isSchedulable))
-      )
       .sort((a,b) => {
         const usableA=a.suggestionWindow && a.suggestionWindow.isSchedulable ? a.suggestionWindow.usableMinutes : 0;
         const usableB=b.suggestionWindow && b.suggestionWindow.isSchedulable ? b.suggestionWindow.usableMinutes : 0;
         if(usableB!==usableA) return usableB-usableA;
         return compareEditorialSuggestions(a,b);
       })
-    : baseRanked;
-  const deduped=[];
+    : presentationEntries;
   const filtered=[];
   for(const o of ranked){
     if(sortBy!=='time' && accessibleOnly && (!nightBounds || !isAccessibleAtAnyNightMoment(o, nightBounds))) continue;
-    if(sortBy!=='time' && deduped.some(existing => isSuggestionDedupedBy(existing, o))) continue;
-    if(sortBy!=='time') deduped.push(o);
     if(matchesSuggestionFilter(o, filter)){
       filtered.push(o);
       if(filtered.length >= limit) break;

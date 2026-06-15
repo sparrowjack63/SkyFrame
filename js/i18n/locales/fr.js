@@ -159,6 +159,7 @@ window.SkyFrameI18n && window.SkyFrameI18n.registerLocale('fr', {
   'suggestions.altShort': 'alt',
   'suggestions.exposureShort': 'pose',
   'suggestions.subsShort': 'subs',
+  'suggestions.membersShort': 'champ',
   'suggestions.tonightShort': 'cette nuit',
   'suggestions.windowLine': '{{duration}} exploitables · {{exposures}} poses de 5 min',
   'suggestions.filter.all': 'Tous',
