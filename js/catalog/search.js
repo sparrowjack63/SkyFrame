@@ -25,6 +25,10 @@ function normalizeSearchText(value){
     .trim();
 }
 
+function isCatalogStyleQuery(value){
+  return /^(?:M\s*\d+|NGC\s*\d+|IC\s*\d+|SH\s*2[\s-]*\d+|SH2[\s-]*\d+|LBN\s*\d+|LDN\s*\d+|BARNARD\s*\d+|B\s*\d+)$/i.test(String(value||'').trim());
+}
+
 function getObjectSearchAliases(o){
   const aliases=[];
   const push=v=>{
@@ -53,13 +57,14 @@ function getObjectSearchAliases(o){
 }
 
 function buildObjectSearchIndex(o){
-  if(!o) return {text:'',compact:''};
+  if(!o) return {text:'',compact:'',aliases:[],compactAliases:[]};
   if(o._searchIndex) return o._searchIndex;
   const aliases=getObjectSearchAliases(o);
   const normalized=[...new Set(aliases.map(normalizeSearchText).filter(Boolean))];
   const text=normalized.join(' · ');
   const compact=text.replace(/\s+/g,'');
-  const index={text,compact};
+  const compactAliases=[...new Set(normalized.map(v=>v.replace(/\s+/g,'')).filter(Boolean))];
+  const index={text,compact,aliases:normalized,compactAliases};
   try{ o._searchIndex=index; }catch(e){}
   return index;
 }
@@ -70,7 +75,11 @@ function objectMatchesSearch(o, query=objectSearch){
   if(!o) return false;
   const idx=buildObjectSearchIndex(o);
   if(!idx.text) return false;
-  if(idx.text.includes(q) || idx.compact.includes(q.replace(/\s+/g,''))) return true;
+  const compactQuery=q.replace(/\s+/g,'');
+  if(isCatalogStyleQuery(query)){
+    return idx.aliases.includes(q) || idx.compactAliases.includes(compactQuery);
+  }
+  if(idx.text.includes(q) || idx.compact.includes(compactQuery)) return true;
   const tokens=q.split(' ').filter(Boolean);
   return tokens.every(tok=>idx.text.includes(tok) || idx.compact.includes(tok));
 }
