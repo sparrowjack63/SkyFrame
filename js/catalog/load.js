@@ -250,11 +250,12 @@ const OPENNGC_VERSION='v20260501';
 const OPENNGC_URL=`https://cdn.jsdelivr.net/gh/mattiaverga/OpenNGC@${OPENNGC_VERSION}/database_files/NGC.csv`;
 
 async function _loadOpenNGCCatalog() {
-  const CACHE_KEY='openngc_catalog_v7';
+  const CACHE_KEY='openngc_catalog_v8';
   const CACHE_TTL=7*24*3600*1000;
   _setCatalogStatus('loading');
   try{ localStorage.removeItem('openngc_catalog_v5'); }catch(e){}
   try{ localStorage.removeItem('openngc_catalog_v6'); }catch(e){}
+  try{ localStorage.removeItem('openngc_catalog_v7'); }catch(e){}
   try {
     // 1. Vérifier le cache
     const raw=localStorage_get_safe(CACHE_KEY);
