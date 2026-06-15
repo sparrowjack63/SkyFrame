@@ -550,6 +550,15 @@ function drawChart(){
     ctx.lineWidth=lw;
     for(let i=1;i<pts.length;i++){
       const[p,c]=[pts[i-1],pts[i]];
+      if(highlightedBySearch && !hov){
+        ctx.save();
+        ctx.strokeStyle='rgba(79,195,247,.55)';
+        ctx.lineWidth=lw+6;
+        ctx.globalAlpha=.34;
+        ctx.setLineDash([]);
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
+        ctx.restore();
+      }
       ctx.strokeStyle=co.color;
       ctx.setLineDash(c.acc?dashAcc:dashInacc);
       if(accessibleFilter && hasNightAccess){
@@ -570,7 +579,7 @@ function drawChart(){
         ctx.save();
         ctx.strokeStyle=co.color;
         ctx.lineWidth=lw+3.5;
-        ctx.globalAlpha=.14;
+        ctx.globalAlpha=.22;
         ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
         ctx.restore();
       }
@@ -609,7 +618,8 @@ function drawChart(){
     }
   };
 
-  chartData.forEach(entry=>{ if(!isHov(entry.co.id)) drawCurve(entry,false); });
+  chartData.forEach(entry=>{ if(!isHov(entry.co.id) && !entry.searchMatch) drawCurve(entry,false); });
+  chartData.forEach(entry=>{ if(!isHov(entry.co.id) && entry.searchMatch) drawCurve(entry,false); });
   // Hovered par-dessus
   const hovEntry=chartData.find(e=>e.co.id===hoveredId);
   if(hovEntry) drawCurve(hovEntry,true);
