@@ -56,6 +56,21 @@ function formatPlanningTime(date){
   return date?`${String(date.getHours()).padStart(2,'0')}h${String(date.getMinutes()).padStart(2,'0')}`:'—';
 }
 
+function isPlanningMomentUsable(o, nb, d, hLocal){
+  const ld=lst(jd(d),S.lon);
+  const pos=altaz(o.ra,o.dec,ld,S.lat);
+  const above=pos.alt>0;
+  const accessible=above && isAcc(pos.alt,pos.az);
+  const shootable=accessible && canShoot(o,moon(d).ill);
+  const astroDark=hLocal>=nb.astroDusk && hLocal<=nb.astroDawn;
+  const lightsOff=isLightsOff(hLocal);
+  return {
+    above,
+    accessible,
+    usable: shootable && astroDark && lightsOff
+  };
+}
+
 function getPlanningWindowForObject(o, nb, stepMin=5){
   if(!o) return null;
   const rec=recFilter(o,moon(getViewTime()).ill);
@@ -84,23 +99,26 @@ function getPlanningWindowForObject(o, nb, stepMin=5){
   const nightBase=getDateForNightHour(startHour);
   let startDate=null,endDate=null,lastDate=null;
   let anyAboveHorizon=false;
+  let anyAccessible=false;
   for(let offset=0; offset<=totalMin; offset+=stepMin){
     const hLocal=startHour + offset/60;
     const d=getDateForNightHour(hLocal, nightBase);
-    const ld=lst(jd(d),S.lon);
-    const pos=altaz(o.ra,o.dec,ld,S.lat);
-    const above=pos.alt>0;
-    const ok=above && isAcc(pos.alt,pos.az);
-    if(above) anyAboveHorizon=true;
-    if(ok && !startDate) startDate=new Date(d);
-    if(ok) lastDate=new Date(d);
-    if(!ok && startDate && !endDate && lastDate) endDate=new Date(lastDate.getTime()+stepMin*60000);
+    const state=isPlanningMomentUsable(o, nb, d, hLocal);
+    if(state.above) anyAboveHorizon=true;
+    if(state.accessible) anyAccessible=true;
+    if(state.usable && !startDate) startDate=new Date(d);
+    if(state.usable) lastDate=new Date(d);
+    if(!state.usable && startDate && !endDate && lastDate) endDate=new Date(lastDate.getTime()+stepMin*60000);
   }
   if(startDate && !endDate && lastDate) endDate=new Date(lastDate.getTime()+stepMin*60000);
   if(!startDate||!endDate){
-    const visibilityReason=anyAboveHorizon?'inaccessible':'below-horizon';
-    const statusLabel=anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessible'):skyFramePlannerTranslate('planner.status.noWindow');
-    const statusDetail=anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessibleDetail'):skyFramePlannerTranslate('planner.status.tooLowDetail');
+    const visibilityReason=anyAccessible?'no-dark-window':(anyAboveHorizon?'inaccessible':'below-horizon');
+    const statusLabel=anyAccessible
+      ? skyFramePlannerTranslate('planner.status.noWindow')
+      : (anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessible'):skyFramePlannerTranslate('planner.status.noWindow'));
+    const statusDetail=anyAccessible
+      ? skyFramePlannerTranslate('planner.status.noWindow')
+      : (anyAboveHorizon?skyFramePlannerTranslate('planner.status.inaccessibleDetail'):skyFramePlannerTranslate('planner.status.tooLowDetail'));
     return {...base,status:'unavailable',statusLabel,statusDetail,visibilityReason};
   }
   const raw=Math.max(0,Math.round((endDate-startDate)/60000));
