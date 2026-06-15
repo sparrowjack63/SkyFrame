@@ -152,6 +152,30 @@ test('dynamic catalog merge preserves fallback aliases for search', () => {
   assert.equal(result.matchesAlias, true);
 });
 
+test('curated dynamic-only objects survive top-N selection even without fallback entries', () => {
+  vm.runInContext(`
+    CATALOG = [{
+      id: 'IC4592',
+      name: 'IC 4592 — Blue Horsehead',
+      cat: 'IC',
+      type: 'nebula',
+      ra: 242.9945,
+      dec: -19.4547,
+      mag: 3.9,
+      size: 60,
+      filter: 'rgb',
+      emission: false,
+      desc: 'Reflection nebula',
+      notes: '',
+      aliases: ['Blue Horsehead'],
+      score: 12
+    }];
+    updateCatalogTopNList();
+  `, sandbox);
+  const ids = sf('CATALOG_TOPN_LIST.map(o => o.id)');
+  assert.ok(ids.includes('IC4592'));
+});
+
 test('suggestion ranking keeps editorial 5-star entries at the top and filters by family', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK;

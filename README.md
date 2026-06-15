@@ -105,11 +105,13 @@ Unit tests cover the astronomical calculations, catalog loading/search/scoring, 
 ```bash
 node --test tests/catalog.test.js
 node --test tests/astro.test.js
+node --test tests/load.test.js
 ```
 
 Recent regression coverage specifically protects:
 
 - search aliases and canonical IDs
+- OpenNGC type aliases and low-southern declinations that remain reachable from the configured site
 - suggestion sorting by usable time
 - de-duplication of same-field equivalents
 - parent/sub-object collapse across cross-family filters (for example `M33` hiding `IC131` / `NGC588`)

@@ -80,6 +80,13 @@ function buildTopNList(){
       base.score = live ? (scoreById[o.id] || calcScore(base).total) : calcScore(base).total;
       return base;
     });
+  const baseLayerById = {};
+  baseLayer.forEach(o => { baseLayerById[o.id] = o; });
+  scored.forEach(o => {
+    if (!curatedIds.has(o.id) || baseLayerById[o.id]) return;
+    baseLayer.push(o);
+    baseLayerById[o.id] = o;
+  });
   const baseIds = new Set(baseLayer.map(o => o.id));
   // Couche 2 — complétion dynamique : meilleurs objets restants par score
   const slots = Math.max(0, CATALOG_TOP_N - baseLayer.length);
