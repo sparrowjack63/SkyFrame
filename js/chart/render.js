@@ -553,14 +553,20 @@ function drawChart(){
       ctx.strokeStyle=co.color;
       ctx.setLineDash(c.acc?dashAcc:dashInacc);
       if(accessibleFilter && hasNightAccess){
+        if(c.acc){
+          ctx.globalAlpha=hov?1:alpha;
+        }else if(highlightedBySearch){
+          ctx.globalAlpha=hov?0.82:(nowAccessible?0.68:0.78);
+        }else{
+          ctx.globalAlpha=nowAccessible ? (hov?0.42:alpha*0.38) : (hov?0.6:alpha*0.52);
+        }
+      }else{
         ctx.globalAlpha=c.acc
           ? (hov?1:alpha)
-          : (nowAccessible ? (hov?0.42:alpha*0.38) : (hov?0.6:alpha*0.52));
-      }else{
-        ctx.globalAlpha=c.acc?(hov?1:alpha):(hov?0.4:alpha*0.25);
+          : (highlightedBySearch ? (hov?0.72:0.62) : (hov?0.4:alpha*0.25));
       }
       ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
-      if(highlightedBySearch && !hov && c.acc){
+      if(highlightedBySearch && !hov){
         ctx.save();
         ctx.strokeStyle=co.color;
         ctx.lineWidth=lw+3.5;
