@@ -293,7 +293,7 @@ test('suggestions dedupe alternate catalog entries for the same target', () => {
   `, sandbox);
   const result = sf(`
     (() => {
-      const ids = getSuggestionCandidates({ limit: 200 }).map(o => o.id);
+      const ids = getSuggestionCandidates({ limit: 200, minSizeArcmin: 0 }).map(o => o.id);
       return {
         hasNgc7635: ids.includes('NGC7635'),
         hasSh2162: ids.includes('Sh2-162'),
@@ -304,6 +304,29 @@ test('suggestions dedupe alternate catalog entries for the same target', () => {
   assert.equal(result.hasNgc7635, true);
   assert.equal(result.hasSh2162, false);
   assert.equal(result.count, 1);
+});
+
+test('suggestions exclude targets smaller than the M13-size floor by default', () => {
+  vm.runInContext(`
+    __origGetMergedSuggestionSource = getMergedSuggestionSource;
+    var __suggestionSourceSizeFloor = [
+      { id:'BIG', name:'BIG', cat:'NGC', type:'nebula', ra:10, dec:20, mag:5, size:25, filter:'rgb', emission:false, desc:'' },
+      { id:'SMALL', name:'SMALL', cat:'NGC', type:'nebula', ra:11, dec:21, mag:5, size:1, filter:'rgb', emission:false, desc:'' }
+    ];
+    getMergedSuggestionSource = () => __suggestionSourceSizeFloor;
+    getOrComputeNightBounds = () => ({ sunset: 20, sunrise: 30 });
+    isAccessibleAtAnyNightMoment = () => true;
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const defaultIds = getSuggestionCandidates({ limit: 20 }).map(o => o.id);
+      const noFloorIds = getSuggestionCandidates({ limit: 20, minSizeArcmin: 0 }).map(o => o.id);
+      getMergedSuggestionSource = __origGetMergedSuggestionSource;
+      return { defaultIds, noFloorIds };
+    })()
+  `);
+  assert.equal(result.defaultIds.join(','), 'BIG');
+  assert.equal(result.noFloorIds.join(','), 'BIG,SMALL');
 });
 
 test('suggestions collapse same-field companion duplicates like North America/Pelican and Veil pair', () => {
