@@ -1,4 +1,4 @@
-let currentFilter = 'all';
+let currentFilter = 'accessible';
 
 // js/ui/targets.js — Rendu grille cibles et filtres
 
