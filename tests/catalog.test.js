@@ -153,6 +153,17 @@ test('new dark and reflection targets stay searchable via canonical ids and alia
   assert.equal(result.eNebulaByMembers, true);
 });
 
+test('formatDisplayName prefers Messier ids when available', () => {
+  const result = sf(`
+    (() => ({
+      messierPrimary: formatDisplayName({ id:'M17', secondaryId:'NGC6618', cat:'Messier', name:'M17 — Oméga' }),
+      messierSecondary: formatDisplayName({ id:'NGC6618', secondaryId:'M17', cat:'NGC', name:'NGC6618 — Oméga' })
+    }))()
+  `);
+  assert.equal(result.messierPrimary, 'M17 — NGC 6618 — Oméga');
+  assert.equal(result.messierSecondary, 'M17 — NGC 6618 — Oméga');
+});
+
 test('dynamic catalog merge preserves fallback aliases for search', () => {
   vm.runInContext(`
     CATALOG = CATALOG_FALLBACK.map(o => {
