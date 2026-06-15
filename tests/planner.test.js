@@ -35,7 +35,7 @@ for (const rel of [
 
 const sf = source => vm.runInContext(source, sandbox);
 
-test('planning window is limited to usable astro-dark night instead of geometric visibility only', () => {
+test('planning window uses a practical sun-altitude cutoff instead of pure geometric visibility', () => {
   const result = sf(`
     (() => {
       S.lat = 45.684;
@@ -51,6 +51,8 @@ test('planning window is limited to usable astro-dark night instead of geometric
       getViewTime = () => new Date('2026-06-15T22:00:00+02:00');
       getBaseDate = () => new Date('2026-06-15T22:00:00+02:00');
       altaz = () => ({ alt: 45, az: 180 });
+      const cutoffJd = jd(new Date('2026-06-16T02:05:00+02:00'));
+      sunAlt = currentJd => currentJd < cutoffJd ? -15 : -8;
       const nb = {
         sunset: 20,
         civilDusk: 20.5,
@@ -84,6 +86,6 @@ test('planning window is limited to usable astro-dark night instead of geometric
   `);
   assert.equal(result.isSchedulable, true);
   assert.equal(result.startHour, 22.5);
-  assert.ok(result.endHour <= 2.1, `fin attendue avant/après peu 02h, obtenu ${result.endHour}`);
+  assert.ok(result.endHour <= 2.2, `fin attendue vers 02h05, obtenu ${result.endHour}`);
   assert.ok(result.rawMinutes <= 220, `durée ne doit pas courir jusqu'au lever du soleil, obtenu ${result.rawMinutes}`);
 });

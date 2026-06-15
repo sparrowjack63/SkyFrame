@@ -4,6 +4,8 @@ function skyFramePlannerTranslate(key, params){
   return window.SkyFrameI18n ? window.SkyFrameI18n.translate(key, params) : key;
 }
 
+const PLAN_MIN_SUN_ALT = -12;
+
 function loadPlannedTargetIds(){
   try{
     const raw=localStorage.getItem(PLAN_STORAGE_KEY);
@@ -62,12 +64,12 @@ function isPlanningMomentUsable(o, nb, d, hLocal){
   const above=pos.alt>0;
   const accessible=above && isAcc(pos.alt,pos.az);
   const shootable=accessible && canShoot(o,moon(d).ill);
-  const astroDark=hLocal>=nb.astroDusk && hLocal<=nb.astroDawn;
+  const sunLowEnough=sunAlt(jd(d),S.lat,S.lon) <= PLAN_MIN_SUN_ALT;
   const lightsOff=isLightsOff(hLocal);
   return {
     above,
     accessible,
-    usable: shootable && astroDark && lightsOff
+    usable: shootable && sunLowEnough && lightsOff
   };
 }
 
