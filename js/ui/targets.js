@@ -11,12 +11,19 @@ function renderTargets(){
   const t=getViewTime();
   const lstD=lst(jd(t),S.lon);
   const mp=moon(t);
+  const nb=currentFilter==='accessible' ? getOrComputeNightBounds() : null;
   // Planètes dynamiques (positions recalculées)
   const planetObjs=Object.keys(PLANETS_META).map(n=>getPlanetObj(n,t));
 
   const planetList=planetObjs.filter(o=>matchesObjectFilter(o,currentFilter,lstD,mp));
   const catList=getVisibleCatalogList(currentFilter,lstD,mp,'targets');
-  let objs=[...planetList,...catList].map(o=>withComputedState(o,lstD,mp));
+  let objs=[...planetList,...catList].map(o=>{
+    const computed=withComputedState(o,lstD,mp);
+    const nightAcc=currentFilter==='accessible'
+      ? isAccessibleAtAnyNightMoment(o,nb,mp)
+      : (computed.acc&&computed.shoot);
+    return {...computed,nightAcc};
+  });
 
   // Tri final : accessible => étoiles desc, score desc, altitude desc
   // Sinon, tri par accessibilité utile puis score
@@ -24,13 +31,14 @@ function renderTargets(){
 
   const totalBeforeSearch=objs.length;
   if(objectSearch) objs=objs.filter(o=>objectMatchesSearch(o));
-  const accessible=objs.filter(o=>o.acc&&o.shoot).length;
+  const accessible=objs.filter(o=>o.nightAcc&&o.shoot).length;
   const companionCount=getTopNCompanionCount();
   const topNLabel=companionCount
     ? skyFrameTargetsTranslate('targets.count.topWithCompanions', { top: CATALOG_TOP_N, count: companionCount, suffix: companionCount>1?'s':'' })
     : skyFrameTargetsTranslate('targets.count.topOnly', { top: CATALOG_TOP_N });
+  const summaryKey=currentFilter==='accessible' ? 'targets.count.summaryNight' : 'targets.count.summary';
   document.getElementById('count-label').textContent=
-    skyFrameTargetsTranslate('targets.count.summary', {
+    skyFrameTargetsTranslate(summaryKey, {
       objects: objs.length,
       topLabel: topNLabel,
       accessible: accessible,
@@ -52,6 +60,9 @@ function renderTargets(){
       if(o.alt<=0)       {badge=skyFrameTargetsTranslate('targets.badge.belowHorizon', { alt: Math.round(o.alt) });badgeCls='bad';}
       else if(!o.acc)    {badge=skyFrameTargetsTranslate('targets.badge.outOfSite', { az: Math.round(o.az) });badgeCls='warn';}
       else               {badge=skyFrameTargetsTranslate('targets.badge.okPlanet', { alt: Math.round(o.alt), az: Math.round(o.az) });badgeCls='ok';}
+    } else if(currentFilter==='accessible' && o.nightAcc && o.shoot && !o.acc){
+      badge=skyFrameTargetsTranslate('targets.badge.laterTonight');
+      badgeCls='warn';
     } else if(o.alt<=0){badge=skyFrameTargetsTranslate('targets.badge.belowHorizon', { alt: Math.round(o.alt) });badgeCls='bad';}
     else if(!o.acc && o.alt>S.altMin){
       const cosBalcO=Math.abs(Math.cos(toR(o.az-S.azBord)));
@@ -65,7 +76,8 @@ function renderTargets(){
     const rt=getRating(o.id);
     const inPlanning=isInPlanning(o.id);
     const safeId=escapeJsAttr(o.id);
-    return `<div class="obj-card ${o.type} ${(!o.acc||!o.shoot)?'inaccessible':''}"
+    const cardAccessible=currentFilter==='accessible' ? (o.nightAcc&&o.shoot) : (o.acc&&o.shoot);
+    return `<div class="obj-card ${o.type} ${(!cardAccessible)?'inaccessible':''}"
       onclick="openModal('${safeId}')" style="border-left-color:${color}">
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
         <button class="night-btn" type="button" onclick="event.stopPropagation();addToPlannerById('${safeId}','cibles')" style="font-size:10px;padding:6px 10px;${inPlanning?'opacity:.65;border-color:#69f0ae;color:#69f0ae;':''}">${inPlanning?skyFrameTargetsTranslate('planner.action.alreadyPlanned'):skyFrameTargetsTranslate('planner.action.plan')}</button>
@@ -82,7 +94,7 @@ function renderTargets(){
           ${rt.reason&&rt.stars>=3?`<div class="rating-reason">${rt.reason}</div>`:''}
         </div>
         <div>
-          <div class="obj-alt-badge" style="color:${o.acc?color:'#555'}">${Math.round(o.alt)}°</div>
+          <div class="obj-alt-badge" style="color:${cardAccessible?color:'#555'}">${Math.round(o.alt)}°</div>
           <div class="obj-alt-label">${skyFrameTargetsTranslate('targets.card.altitude')}</div>
           ${o.cat!=='Planet'?`<div style="text-align:right;margin-top:4px;font-family:var(--mono);font-size:11px;color:var(--accent2);font-weight:700;line-height:1">${o.score}</div><div class="obj-alt-label">${skyFrameTargetsTranslate('targets.card.score')}</div>`:''}
         </div>

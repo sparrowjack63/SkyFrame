@@ -38,6 +38,19 @@ function _utcOffsetFromLon(lon) {
   return Math.round(lon / 15);
 }
 
+function _normalizeOpenNGCType(rawType) {
+  const normalized = String(rawType || '').trim();
+  if (normalized === 'RfN') return 'RfNeb';
+  return normalized;
+}
+
+function _canReachConfiguredSky(dec) {
+  if (!Number.isFinite(dec)) return false;
+  const minAlt = Number.isFinite(S.altMin) ? S.altMin : 0;
+  const maxTransitAlt = 90 - Math.abs(S.lat - dec);
+  return maxTransitAlt >= Math.max(0, minAlt);
+}
+
 function _isEverVisible(ra, dec) {
   const year = new Date().getFullYear();
   const utcOff = _utcOffsetFromLon(S.lon);
@@ -117,7 +130,7 @@ function _parseOpenNGC(text) {
   for (let i=1; i<lines.length; i++) {
     const c = lines[i].split(';');
     if (c.length < 5) continue;
-    const rawType = (c[iType]||'').trim();
+    const rawType = _normalizeOpenNGCType(c[iType]);
     if (!TYPE_MAP[rawType]) continue;
     const ra  = _parseRA(c[iRA]);
     const dec = _parseDec(c[iDec]);
@@ -165,7 +178,7 @@ function _parseOpenNGC(text) {
   // Passe 3 : filtrer par taille ou appartenance à un groupe, puis SB et déclinaison
   const candidates=allRows.filter(r=>{
     if(r.type==='galaxy' && r._sb!==null && r._sb>25.5) return false; // trop diffuse
-    if(r.dec<-15) return false;                                      // pré-filtre géométrique
+    if(!_canReachConfiguredSky(r.dec)) return false;                 // pré-filtre site-dépendant
     return r._maj>=3.4 || r._inGroup;
   });
 
@@ -201,6 +214,7 @@ function _parseOpenNGC(text) {
       desc:    cm?.desc  || '',
       notes:   cm?.notes || '',
       astrobinQuery: cm?.astrobinQuery || null,
+      aliases: cm?.aliases || null,
       groupMembers: cm?.groupMembers || null,
       months:  _calcVisibleMonths(r.ra,r.dec),
       sb:      r._sb,
@@ -236,10 +250,11 @@ const OPENNGC_VERSION='v20260501';
 const OPENNGC_URL=`https://cdn.jsdelivr.net/gh/mattiaverga/OpenNGC@${OPENNGC_VERSION}/database_files/NGC.csv`;
 
 async function _loadOpenNGCCatalog() {
-  const CACHE_KEY='openngc_catalog_v6';
+  const CACHE_KEY='openngc_catalog_v7';
   const CACHE_TTL=7*24*3600*1000;
   _setCatalogStatus('loading');
   try{ localStorage.removeItem('openngc_catalog_v5'); }catch(e){}
+  try{ localStorage.removeItem('openngc_catalog_v6'); }catch(e){}
   try {
     // 1. Vérifier le cache
     const raw=localStorage_get_safe(CACHE_KEY);

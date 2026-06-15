@@ -12,6 +12,13 @@ const ROOT = path.join(__dirname, '..');
 const storage = new Map();
 const sandbox = {
   console,
+  S: {
+    lat: 48.8566, lon: 2.3522,
+    altMin: 20, azMin: 0, azMax: 360,
+    horizonConstraint: false,
+    azBord: 0, kBord: 0, azBordEst: 90, kBordEst: 0,
+    availableFilters: ['neutral', 'lightpollution', 'dualband']
+  },
   localStorage: {
     getItem(key) { return storage.has(key) ? storage.get(key) : null; },
     setItem(key, value) { storage.set(key, String(value)); },
@@ -150,6 +157,69 @@ test('dynamic catalog merge preserves fallback aliases for search', () => {
   `);
   assert.equal(result.hasAlias, true);
   assert.equal(result.matchesAlias, true);
+});
+
+test('curated dynamic-only objects survive top-N selection even without fallback entries', () => {
+  vm.runInContext(`
+    CATALOG = [{
+      id: 'IC4592',
+      name: 'IC 4592 — Blue Horsehead',
+      cat: 'IC',
+      type: 'nebula',
+      ra: 242.9945,
+      dec: -19.4547,
+      mag: 3.9,
+      size: 60,
+      filter: 'rgb',
+      emission: false,
+      desc: 'Reflection nebula',
+      notes: '',
+      aliases: ['Blue Horsehead'],
+      score: 12
+    }];
+    updateCatalogTopNList();
+  `, sandbox);
+  const ids = sf('CATALOG_TOPN_LIST.map(o => o.id)');
+  assert.ok(ids.includes('IC4592'));
+});
+
+test('accessible filter is night-based in targets as well as charts', () => {
+  vm.runInContext(`
+    CATALOG = [{
+      id: 'IC4592',
+      name: 'IC 4592 — Blue Horsehead',
+      cat: 'IC',
+      type: 'nebula',
+      ra: 242.9945,
+      dec: -19.4547,
+      mag: 3.9,
+      size: 60,
+      filter: 'rgb',
+      emission: false,
+      desc: 'Reflection nebula',
+      notes: '',
+      aliases: ['Blue Horsehead']
+    }];
+    updateCatalogTopNList();
+    S.lat = 45.684;
+    S.lon = 2.906;
+    S.altMin = 22;
+    S.azMin = 55;
+    S.azMax = 284;
+    S.horizonConstraint = false;
+    S.availableFilters = ['neutral','lightpollution','dualband','narrowband'];
+    getOrComputeNightBounds = () => ({ sunset: 21, sunrise: 29 });
+    isAccessibleAtAnyNightMoment = () => true;
+  `, sandbox);
+  const result = sf(`
+    (() => {
+      const visibleTargets = getVisibleCatalogList('accessible', 0, { ill: 10 }, 'targets').map(o => o.id);
+      const visibleCharts = getVisibleCatalogList('accessible', 0, { ill: 10 }, 'chart').map(o => o.id);
+      return { visibleTargets, visibleCharts };
+    })()
+  `);
+  assert.ok(result.visibleTargets.includes('IC4592'));
+  assert.ok(result.visibleCharts.includes('IC4592'));
 });
 
 test('suggestion ranking keeps editorial 5-star entries at the top and filters by family', () => {
