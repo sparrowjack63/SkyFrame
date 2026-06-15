@@ -22,11 +22,22 @@ function mergeSuggestionCatalogEntry(base, next){
   if(!base) return next ? {...next} : null;
   if(!next) return {...base};
   const aliases=mergeCatalogAliases(base.aliases, next.aliases);
+  const baseSize=Number(base.size);
+  const nextSize=Number(next.size);
   const merged = {
     ...base,
     ...next,
     aliases: aliases.length ? aliases : undefined,
   };
+  // Keep the broadest editorial/live extent when the same target is merged
+  // across fallback and dynamic catalogs, otherwise large Messier nebulae can
+  // disappear from Suggestions after canonical alias collapsing.
+  if(Number.isFinite(baseSize) || Number.isFinite(nextSize)){
+    merged.size=Math.max(
+      Number.isFinite(baseSize) ? baseSize : 0,
+      Number.isFinite(nextSize) ? nextSize : 0
+    );
+  }
   const messierId=getMessierAliasId(next) || getMessierAliasId(base);
   if(!messierId) return merged;
   const canonicalFallback = CATALOG_FALLBACK.find(o => o.id === messierId) || null;

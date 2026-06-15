@@ -199,7 +199,43 @@ test('suggestion source collapses stale NGC/Messier duplicates onto the Messier 
   assert.equal(result.secondaryId, 'NGC6618');
   assert.equal(result.cat, 'Messier');
   assert.equal(result.name, 'M17 — Oméga');
-  assert.equal(result.size, 12.6);
+  assert.equal(result.size, 40);
+});
+
+test('Messier canonical merge keeps curated size so valid targets do not vanish from suggestions', () => {
+  const result = sf(`
+    (() => {
+      CATALOG = [{
+        id:'NGC6618',
+        secondaryId:'M17',
+        name:'NGC6618 — Oméga',
+        cat:'NGC',
+        type:'nebula',
+        ra:275.1963,
+        dec:-16.1715,
+        mag:7,
+        size:12.6,
+        filter:'lextreme',
+        emission:true,
+        desc:'Nébuleuse d\\'émission brillante.'
+      }];
+      SUGGESTION_SOURCE_CACHE = { catalogRef: null, entries: null };
+      SUGGESTION_PRESENTATION_CACHE = { sourceRef: null, entries: null };
+      const source = getMergedSuggestionSource();
+      const presentation = getSuggestionPresentationEntries(source).find(o => o.id === 'M17');
+      const suggestions = getSuggestionCandidates({ limit: 200, onlyAccessible: false });
+      return {
+        size: presentation && presentation.size,
+        suggestionMaxSize: presentation && presentation.suggestionMaxSize,
+        passesThreshold: presentation && passesSuggestionSizeThreshold(presentation, 20),
+        hasSuggestion: suggestions.some(o => o.id === 'M17')
+      };
+    })()
+  `);
+  assert.equal(result.size, 40);
+  assert.equal(result.suggestionMaxSize, 40);
+  assert.equal(result.passesThreshold, true);
+  assert.equal(result.hasSuggestion, true);
 });
 
 test('dynamic catalog merge preserves fallback aliases for search', () => {
