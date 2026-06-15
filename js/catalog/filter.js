@@ -103,26 +103,23 @@ function isAccessibleAtAnyNightMoment(o, nb, mpNow){
   return false;
 }
 
+function isAccessibleForFilter(o, filter, lstD, mp, mode='targets'){
+  if(filter!=='accessible') return matchesObjectFilter(o, filter, lstD, mp);
+  const nb=getOrComputeNightBounds();
+  return isAccessibleAtAnyNightMoment(o, nb, mp);
+}
+
 function getVisibleCatalogList(filter, lstD, mp, mode='targets'){
   const topNIds=new Set(CATALOG_TOPN_LIST.map(o=>o.id));
   const catalogById=getCatalogById();
   let catList;
   if(filter==='accessible'){
-    if(mode==='chart'){
-      const nb=getOrComputeNightBounds();
-      const isChartAccessible=o=>isAccessibleAtAnyNightMoment(o,nb,mp);
-      catList=CATALOG_TOPN_LIST
-        .map(o=>catalogById[o.id] || o)
-        .filter(o=>isChartAccessible(o));
-      const seenIds=new Set(catList.map(o=>o.id));
-      catList.push(...getForcedCompanionObjects(catList,catalogById,isChartAccessible,seenIds));
-    }else{
-      catList=CATALOG_TOPN_LIST
-        .map(o=>catalogById[o.id] || o)
-        .filter(o=>matchesObjectFilter(o,filter,lstD,mp));
-      const seenIds=new Set(catList.map(o=>o.id));
-      catList.push(...getForcedCompanionObjects(catList,catalogById,o=>matchesObjectFilter(o,filter,lstD,mp),seenIds));
-    }
+    const isNightAccessible=o=>isAccessibleForFilter(o,filter,lstD,mp,mode);
+    catList=CATALOG_TOPN_LIST
+      .map(o=>catalogById[o.id] || o)
+      .filter(o=>isNightAccessible(o));
+    const seenIds=new Set(catList.map(o=>o.id));
+    catList.push(...getForcedCompanionObjects(catList,catalogById,isNightAccessible,seenIds));
   }else{
     catList=CATALOG_TOPN_LIST
       .map(o=>catalogById[o.id] || o)
