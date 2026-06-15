@@ -550,21 +550,37 @@ function drawChart(){
     ctx.lineWidth=lw;
     for(let i=1;i<pts.length;i++){
       const[p,c]=[pts[i-1],pts[i]];
+      const searchVisibleSegment = !!(c.balconyAcc || p.balconyAcc);
+      if(highlightedBySearch && !hov && searchVisibleSegment){
+        ctx.save();
+        ctx.strokeStyle='rgba(79,195,247,.55)';
+        ctx.lineWidth=lw+6;
+        ctx.globalAlpha=.34;
+        ctx.setLineDash([]);
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
+        ctx.restore();
+      }
       ctx.strokeStyle=co.color;
       ctx.setLineDash(c.acc?dashAcc:dashInacc);
       if(accessibleFilter && hasNightAccess){
+        if(c.acc){
+          ctx.globalAlpha=hov?1:alpha;
+        }else if(highlightedBySearch && searchVisibleSegment){
+          ctx.globalAlpha=hov?0.82:(nowAccessible?0.68:0.78);
+        }else{
+          ctx.globalAlpha=nowAccessible ? (hov?0.42:alpha*0.38) : (hov?0.6:alpha*0.52);
+        }
+      }else{
         ctx.globalAlpha=c.acc
           ? (hov?1:alpha)
-          : (nowAccessible ? (hov?0.42:alpha*0.38) : (hov?0.6:alpha*0.52));
-      }else{
-        ctx.globalAlpha=c.acc?(hov?1:alpha):(hov?0.4:alpha*0.25);
+          : (highlightedBySearch && searchVisibleSegment ? (hov?0.72:0.62) : (hov?0.4:alpha*0.25));
       }
       ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
-      if(highlightedBySearch && !hov && c.acc){
+      if(highlightedBySearch && !hov && searchVisibleSegment){
         ctx.save();
         ctx.strokeStyle=co.color;
         ctx.lineWidth=lw+3.5;
-        ctx.globalAlpha=.14;
+        ctx.globalAlpha=.22;
         ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(c.x,c.y);ctx.stroke();
         ctx.restore();
       }
@@ -603,7 +619,8 @@ function drawChart(){
     }
   };
 
-  chartData.forEach(entry=>{ if(!isHov(entry.co.id)) drawCurve(entry,false); });
+  chartData.forEach(entry=>{ if(!isHov(entry.co.id) && !entry.searchMatch) drawCurve(entry,false); });
+  chartData.forEach(entry=>{ if(!isHov(entry.co.id) && entry.searchMatch) drawCurve(entry,false); });
   // Hovered par-dessus
   const hovEntry=chartData.find(e=>e.co.id===hoveredId);
   if(hovEntry) drawCurve(hovEntry,true);
