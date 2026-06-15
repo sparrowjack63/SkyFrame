@@ -82,6 +82,23 @@ test('IC1396 remains searchable via canonical id and human aliases', () => {
   assert.equal(result.byAlias, true);
 });
 
+test('catalog ids do not match longer ids by substring in grouped compositions', () => {
+  vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
+  const result = sf(`
+    (() => {
+      const markarian = CATALOG_FALLBACK.find(x => x.id === 'MarkarianChain');
+      return {
+        m8: objectMatchesSearch(markarian, 'M8'),
+        m84: objectMatchesSearch(markarian, 'M84'),
+        markarian: objectMatchesSearch(markarian, 'Markarian')
+      };
+    })()
+  `);
+  assert.equal(result.m8, false);
+  assert.equal(result.m84, true);
+  assert.equal(result.markarian, true);
+});
+
 test('summer gaps remain searchable via curated aliases', () => {
   vm.runInContext('CATALOG = CATALOG_FALLBACK; updateCatalogTopNList();', sandbox);
   const result = sf(`
