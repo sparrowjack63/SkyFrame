@@ -74,7 +74,7 @@ function renderSuggestionFact(value){
 function renderSuggestionMembers(o){
   const members=(o && Array.isArray(o.suggestionMembers)) ? o.suggestionMembers : [];
   if(members.length <= 1) return '';
-  const labels=members.map(m => escapeHtml(m.id)).join(' · ');
+  const labels=members.map(m => escapeHtml(formatDisplayName(m))).join(' · ');
   return `<div class="suggestion-desc" style="font-size:11px;color:var(--accent2);margin-top:6px;">🧩 ${labels}</div>`;
 }
 

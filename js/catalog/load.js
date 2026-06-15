@@ -123,7 +123,7 @@ function _parseOpenNGC(text) {
   const iMin  = hdr.indexOf('MinAx');
   const iVmag = hdr.indexOf('V-Mag');
   const iBmag = hdr.indexOf('B-Mag');
-  const iMess = hdr.indexOf('Messier');
+  const iMess = hdr.indexOf('Messier') >= 0 ? hdr.indexOf('Messier') : hdr.indexOf('M');
 
   // Passe 1 : parser toutes les lignes valides
   const allRows = [];

@@ -324,6 +324,7 @@ function buildSuggestionPresentationEntry(component){
   const maxSize=Math.max(Number(representative.size) || 0, ...memberSizes);
   const memberEntries=ranked.map(o => ({
     id: o.id,
+    secondaryId: o.secondaryId || null,
     name: formatDisplayName(o),
     type: o.type,
     cat: o.cat
